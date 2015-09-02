@@ -11,9 +11,8 @@ state("gta-vc", "jp") {}
 
 init
 {
-	// Workaround to only do things once per script lifetime.
-	try	{var test = vars.notFirstRun;}
-	catch
+	// Populate the mission memory addresses list, but only once.
+	if(!((IDictionary<String, object>)vars).ContainsKey("missionAddresses"))
 	{
 		// Makes a list of all the memory addresses for each mission, in order.
 		vars.missionAddresses = new List<int>();
@@ -40,8 +39,6 @@ init
 		vars.missionAddresses.Add(0x4216C0);  // Spilling the Beans
 		vars.missionAddresses.Add(0x4216C4);  // Hit the Courier
 		vars.missionAddresses.Add(0x4216B4);  // Cap the Collector
-		
-		vars.notFirstRun = true;
 	}
 	
 	// Detects current game version.
