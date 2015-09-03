@@ -19,6 +19,7 @@ init
 		
 		// Adds all mission memory addresses to the list above.
 		// If you don't want to autosplit for certain missions, just put a // in front of them.
+		// If you don't want to autosplit for ANY missions, commenting them all out works.
 		vars.missionAddresses.Add(0x421600);  // The Party
 		vars.missionAddresses.Add(0x421604);  // Back Alley Brawl
 		vars.missionAddresses.Add(0x421608);  // Jury Fury
@@ -64,10 +65,13 @@ init
 	
 	// Makes a copy of the mission memory addresses list (so it can be edited and then restored on reset).
 	vars.missionAddressesCurrent = new List<int>(vars.missionAddresses);
-	vars.currentMissionWatcher = new MemoryWatcher<byte>(new DeepPointer(vars.missionAddressesCurrent[0]+vars.offset));
 	
-	// Used to ignore the check for a single frame (not sure if actually needed but leaving in anyway).
-	vars.checkCurrentMission = false;
+	if (vars.missionAddresses.Count != 0) {
+		vars.currentMissionWatcher = new MemoryWatcher<byte>(new DeepPointer(vars.missionAddressesCurrent[0]+vars.offset));
+		
+		// Used to ignore the check for a single frame (not sure if actually needed but leaving in anyway).
+		vars.checkCurrentMission = false;
+	}
 	
 	// Used to know when the player starts a new game.
 	vars.gameState = new MemoryWatcher<int>(new DeepPointer(0x5B5F10+vars.offset));
@@ -139,8 +143,11 @@ start
 	{
 		// Makes a copy of the mission memory addresses list (so it can be edited and then restored on reset).
 		vars.missionAddressesCurrent = new List<int>(vars.missionAddresses);
-		vars.currentMissionWatcher = new MemoryWatcher<byte>(new DeepPointer(vars.missionAddressesCurrent[0]+vars.offset));
-		vars.checkCurrentMission = false;
+		
+		if (vars.missionAddressesCurrent.Count != 0) {
+			vars.currentMissionWatcher = new MemoryWatcher<byte>(new DeepPointer(vars.missionAddressesCurrent[0]+vars.offset));
+			vars.checkCurrentMission = false;
+		}
 	}
 	
 	return vars.doStart;
