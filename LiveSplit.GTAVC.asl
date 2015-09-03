@@ -66,7 +66,7 @@ init
 	// Makes a copy of the mission memory addresses list (so it can be edited and then restored on reset).
 	vars.missionAddressesCurrent = new List<int>(vars.missionAddresses);
 	
-	if (vars.missionAddresses.Count != 0) {
+	if (vars.missionAddressesCurrent.Count != 0) {
 		vars.currentMissionWatcher = new MemoryWatcher<byte>(new DeepPointer(vars.missionAddressesCurrent[0]+vars.offset));
 		
 		// Used to ignore the check for a single frame (not sure if actually needed but leaving in anyway).
