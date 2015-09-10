@@ -7,6 +7,13 @@
 3. *(Optional)* Edit the script to remove missions you don't want to split for; open the file in a text editor (e.g. Notepad) and look at the comments.
 4. Make sure you save your layout if you always want the autosplitter to be active!
 
+**What is Autosplit? (by default)**
+
+- Starting split (after the new game loading is finished).
+- Every mission that is required for Any%.
+- Ending split (on loss of control on "Keep Your Friends Close...").
+- Reset on the new game loading screen, if timer is currently running.
+
 **Versions known to work:**
 
 - 1.0
