@@ -10,10 +10,10 @@ state("gta-vc", "steam") {}
 state("gta-vc", "jp") {}
 
 init
-{
+{	
 	// Populate the mission memory addresses list, but only once.
 	if(!((IDictionary<String, object>)vars).ContainsKey("missionAddresses"))
-	{
+	{		
 		// Makes a list of all the memory addresses for each mission, in order.
 		vars.missionAddresses = new List<int>();
 		
@@ -84,13 +84,13 @@ init
 
 update
 {
-	// unknown version, don't do anything
-	if (version == "")
-		return;
-	
 	vars.doStart = false;
 	vars.doReset = false;
 	vars.doSplit = false;
+	
+	// unknown version, don't do anything
+	if (version == "")
+		return;
 	
 	// Keeping a few extra memory watchers up to date for the current frame.
 	vars.gameState.Update(game);
