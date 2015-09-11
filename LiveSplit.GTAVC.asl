@@ -10,10 +10,10 @@ state("gta-vc", "steam") {}
 state("gta-vc", "jp") {}
 
 init
-{	
+{
 	// Populate the mission memory addresses list, but only once.
 	if(!((IDictionary<String, object>)vars).ContainsKey("missionAddresses"))
-	{		
+	{
 		// Makes a list of all the memory addresses for each mission, in order.
 		vars.missionAddresses = new List<int>();
 		
