@@ -11,6 +11,9 @@ state("gta-vc", "jp") {}
 
 init
 {
+	// Read category from split file
+	vars.category = timer.Run.CategoryName.ToLower();
+	
 	// Populate the mission memory addresses list, but only once.
 	if(!((IDictionary<String, object>)vars).ContainsKey("missionAddresses"))
 	{
@@ -19,27 +22,106 @@ init
 		
 		// Adds all mission memory addresses to the list above.
 		// If you don't want to autosplit for certain missions, just put a // in front of them.
-		// If you don't want to autosplit for ANY missions, commenting them all out works.
-		vars.missionAddresses.Add(0x421600);  // The Party
-		vars.missionAddresses.Add(0x421604);  // Back Alley Brawl
-		vars.missionAddresses.Add(0x421608);  // Jury Fury
-		vars.missionAddresses.Add(0x42160C);  // Riot
-		vars.missionAddresses.Add(0x421614);  // Treacherous Swine
-		vars.missionAddresses.Add(0x421618);  // Mall Shootout
-		vars.missionAddresses.Add(0x42161C);  // Guardian Angels
-		vars.missionAddresses.Add(0x42162C);  // The Chase
-		vars.missionAddresses.Add(0x421630);  // Phnom Penh '86
-		vars.missionAddresses.Add(0x421634);  // The Fastest Boat
-		vars.missionAddresses.Add(0x421638);  // Supply and Demand
-		vars.missionAddresses.Add(0x421620);  // Sir Yes Sir
-		vars.missionAddresses.Add(0x421648);  // Death Row
-		vars.missionAddresses.Add(0x42163C);  // Rub Out
-		vars.missionAddresses.Add(0x4216A8);  // Shakedown
-		vars.missionAddresses.Add(0x4216AC);  // Bar Brawl
-		vars.missionAddresses.Add(0x4216B0);  // Cop Land
-		vars.missionAddresses.Add(0x4216C0);  // Spilling the Beans
-		vars.missionAddresses.Add(0x4216C4);  // Hit the Courier
-		vars.missionAddresses.Add(0x4216B4);  // Cap the Collector
+		// If you don't want to autosplit for ANY missions, commenting them all out works. (but only in Any%)
+		// By default autosplitter splits for every mission in Any% category and after the credits in All Missions.
+		// All unsupported categories will split only after credits.
+		// You may want to adjust these settings to your needs.
+		
+		///////////////////////////// A N Y % /////////////////////////////
+		if (vars.category.Contains("any%") || vars.category.Contains("beat the game"))
+		{
+			vars.missionAddresses.Add(0x421600);  // The Party
+			vars.missionAddresses.Add(0x421604);  // Back Alley Brawl
+			vars.missionAddresses.Add(0x421608);  // Jury Fury
+			vars.missionAddresses.Add(0x42160C);  // Riot
+			vars.missionAddresses.Add(0x421614);  // Treacherous Swine
+			vars.missionAddresses.Add(0x421618);  // Mall Shootout
+			vars.missionAddresses.Add(0x42161C);  // Guardian Angels
+			vars.missionAddresses.Add(0x42162C);  // The Chase
+			vars.missionAddresses.Add(0x421630);  // Phnom Penh '86
+			vars.missionAddresses.Add(0x421634);  // The Fastest Boat
+			vars.missionAddresses.Add(0x421638);  // Supply and Demand
+			vars.missionAddresses.Add(0x421620);  // Sir Yes Sir
+			vars.missionAddresses.Add(0x421648);  // Death Row
+			vars.missionAddresses.Add(0x42163C);  // Rub Out
+			vars.missionAddresses.Add(0x4216A8);  // Shakedown
+			vars.missionAddresses.Add(0x4216AC);  // Bar Brawl
+			vars.missionAddresses.Add(0x4216B0);  // Cop Land
+			vars.missionAddresses.Add(0x4216C0);  // Spilling the Beans
+			vars.missionAddresses.Add(0x4216C4);  // Hit the Courier
+			vars.missionAddresses.Add(0x4216B4);  // Cap the Collector
+		}
+		
+		///////////////////// A L L   M I S S I O N S /////////////////////
+		// Mission order SHOULD BE up to date with latest KZ_FREW's route.
+		// It's important to list missions here in the exact same order you do them during the run.
+		// You may want to rearrange this list for your needs.
+		// It's recommended to split at most every few missions in case something unexpected happens in the run.
+		else if (vars.category.Contains("all missions")) 
+		{
+			//vars.missionAddresses.Add(0x421600);  // The Party
+			//vars.missionAddresses.Add(0x421604);  // Back Alley Brawl
+			//vars.missionAddresses.Add(0x421608);  // Jury Fury
+			//vars.missionAddresses.Add(0x42160C);  // Riot
+			//vars.missionAddresses.Add(0x421614);  // Treacherous Swine
+			//vars.missionAddresses.Add(0x421728);  // Road Kill
+			//vars.missionAddresses.Add(0x421618);  // Mall Shootout
+			//vars.missionAddresses.Add(0x42161C);  // Guardian Angels
+			//vars.missionAddresses.Add(0x42162C);  // The Chase
+			//vars.missionAddresses.Add(0x42172C);  // Waste The Wife
+			//vars.missionAddresses.Add(0x421630);  // Phnom Penh '86
+			//vars.missionAddresses.Add(0x421634);  // The Fastest Boat
+			//vars.missionAddresses.Add(0x421638);  // Supply and Demand
+			//vars.missionAddresses.Add(0x421620);  // Sir Yes Sir
+			//vars.missionAddresses.Add(0x421650);  // Four Iron
+			//vars.missionAddresses.Add(0x421648);  // Death Row
+			//vars.missionAddresses.Add(0x42163C);  // Rub Out
+			//vars.missionAddresses.Add(0x4216A8);  // Shakedown
+			//vars.missionAddresses.Add(0x421684);  // Recruitment Drive
+			//vars.missionAddresses.Add(0x421688);  // Dildo Dodo
+			//vars.missionAddresses.Add(0x4216C0);  // Spilling the Beans
+			//vars.missionAddresses.Add(0x4216C4);  // Hit the Courier
+			//vars.missionAddresses.Add(0x4216AC);  // Bar Brawl
+			//vars.missionAddresses.Add(0x421730);  // Autocide
+			//vars.missionAddresses.Add(0x421624);  // All Hands On Deck
+			//vars.missionAddresses.Add(0x42168C);  // Martha's Mug Shot
+			//vars.missionAddresses.Add(0x421690);  // G-Spotlight
+			//vars.missionAddresses.Add(0x421654);  // Demolition Man
+			//vars.missionAddresses.Add(0x421658);  // Two Bit Hit
+			//vars.missionAddresses.Add(0x421750);  // V.I.P.
+			//vars.missionAddresses.Add(0x421734);  // Check Out At The Check In
+			//vars.missionAddresses.Add(0x421700);  // Love Juice
+			//vars.missionAddresses.Add(0x421704);  // Psycho Killer
+			//vars.missionAddresses.Add(0x4216CC);  // Alloy Wheels Of Steel
+			//vars.missionAddresses.Add(0x4216D0);  // Messing With The Man
+			//vars.missionAddresses.Add(0x4216D4);  // Hog Tied
+			//vars.missionAddresses.Add(0x4216B0);  // Cop Land
+			//vars.missionAddresses.Add(0x421754);  // Friendly Rivalry
+			//vars.missionAddresses.Add(0x421758);  // Cabmaggedon
+			//vars.missionAddresses.Add(0x421660);  // No Escape?
+			//vars.missionAddresses.Add(0x4216DC);  // Stunt Boat Challenge
+			//vars.missionAddresses.Add(0x421664);  // The Shootist
+			//vars.missionAddresses.Add(0x421708);  // Publicity Tour
+			//vars.missionAddresses.Add(0x421668);  // The Driver
+			//vars.missionAddresses.Add(0x42166C);  // The Job
+			//vars.missionAddresses.Add(0x4216F0);  // Juju Scramble
+			//vars.missionAddresses.Add(0x4216F4);  // Bombs Away!
+			//vars.missionAddresses.Add(0x421738);  // Loose Ends
+			//vars.missionAddresses.Add(0x4216B4);  // Cap the Collector
+			//vars.missionAddresses.Add(0x4216F8);  // Dirty Lickin's
+			//vars.missionAddresses.Add(0x421678);  // Gun Runner
+			//vars.missionAddresses.Add(0x42167C);  // Boomshine Saigon
+			//vars.missionAddresses.Add(0x4216E0);  // Cannon Fodder
+			//vars.missionAddresses.Add(0x4216E4);  // Naval Engagement
+			//vars.missionAddresses.Add(0x4216E8);  // Trojan Voodoo
+			vars.missionAddresses.Add(0x4216B8);  // Keep Your Friends Close
+		}
+		
+		///////////////////////////////////////////////////////////////////
+		else 
+		{
+			vars.missionAddresses.Add(0x4216B8); // Keep Your Friends Close
+		}
 	}
 	
 	// Detects current game version.
@@ -76,10 +158,13 @@ init
 	// Used to know when the player starts a new game.
 	vars.gameState = new MemoryWatcher<int>(new DeepPointer(0x5B5F10+vars.offset));
 	
-	// Last split stuff on Keep Your Friends Close, not exactly sure what the values represent but they work!
-	vars.kyfc1 = new MemoryWatcher<byte>(new DeepPointer(0x426104+vars.offset));
-	vars.kyfc2 = new MemoryWatcher<int>(new DeepPointer(0x425DAC+vars.offset));
-	vars.kyfc3 = new MemoryWatcher<int>(new DeepPointer(0x426100+vars.offset));
+	// Last split stuff for any% on Keep Your Friends Close, not exactly sure what the values represent but they work!
+	if (vars.category.Contains("any%") || vars.category.Contains("beat the game"))
+	{
+		vars.kyfc1 = new MemoryWatcher<byte>(new DeepPointer(0x426104+vars.offset));
+		vars.kyfc2 = new MemoryWatcher<int>(new DeepPointer(0x425DAC+vars.offset));
+		vars.kyfc3 = new MemoryWatcher<int>(new DeepPointer(0x426100+vars.offset));
+	}
 }
 
 update
@@ -94,9 +179,12 @@ update
 	
 	// Keeping a few extra memory watchers up to date for the current frame.
 	vars.gameState.Update(game);
-	vars.kyfc1.Update(game);
-	vars.kyfc2.Update(game);
-	vars.kyfc3.Update(game);
+	if (vars.category.Contains("any%") || vars.category.Contains("beat the game"))
+	{
+		vars.kyfc1.Update(game);
+		vars.kyfc2.Update(game);
+		vars.kyfc3.Update(game);
+	}
 	
 	// Japanese game state is shifted by +4 (due to more intro movies) so needs a separate check.
 	if (version == "jp")
@@ -133,8 +221,11 @@ update
 		else {vars.checkCurrentMission = true;}
 	}
 	
-	// Final split (when control is lost on Keep Your Friends Closer).
-	else if (vars.kyfc1.Current == 245 && vars.kyfc2.Current > vars.kyfc3.Current) {vars.doSplit = true;}
+	// Final split for any% (when control is lost on Keep Your Friends Closer). [this is a little bit dirty but should work]
+	else if (vars.category.Contains("any%") || vars.category.Contains("beat the game"))
+	{
+		if (vars.kyfc1.Current == 245 && vars.kyfc2.Current > vars.kyfc3.Current) {vars.doSplit = true;}
+	}
 }
 
 start
