@@ -23,12 +23,12 @@ init
 		// Adds all mission memory addresses to the list above.
 		// If you don't want to autosplit for certain missions, just put a // in front of them.
 		// If you don't want to autosplit for ANY missions, commenting them all out works. (but only in Any%)
-		// By default autosplitter splits for every mission in Any% category and after the credits in All Missions.
+		// By default autosplitter splits after every mission in Any% and Shakedown% category, in All Missions it splits after credits.
 		// All unsupported categories will split only after credits.
 		// You may want to adjust these settings to your needs.
 		
 		///////////////////////////// A N Y % /////////////////////////////
-		if (vars.category.Contains("any%") || vars.category.Contains("beat the game"))
+		if (vars.category.Contains("any") || vars.category.Contains("beat the game"))
 		{
 			vars.missionAddresses.Add(0x421600);  // The Party
 			vars.missionAddresses.Add(0x421604);  // Back Alley Brawl
@@ -56,8 +56,8 @@ init
 		// Mission order SHOULD BE up to date with latest KZ_FREW's route.
 		// It's important to list missions here in the exact same order you do them during the run.
 		// You may want to rearrange this list for your needs.
-		// It's recommended to split at most every few missions in case something unexpected happens in the run.
-		else if (vars.category.Contains("all missions")) 
+		// It's recommended to split at least every few missions in case something unexpected happens in the run.
+		else if (vars.category.Contains("missions")) 
 		{
 			//vars.missionAddresses.Add(0x421600);  // The Party
 			//vars.missionAddresses.Add(0x421604);  // Back Alley Brawl
@@ -117,6 +117,30 @@ init
 			vars.missionAddresses.Add(0x4216B8);  // Keep Your Friends Close
 		}
 		
+		/////////////////// B E A T   S H A K E D O W N ///////////////////
+		else if (vars.category.Contains("shakedown"))
+		{
+			vars.missionAddresses.Add(0x421600);  // The Party
+			vars.missionAddresses.Add(0x421604);  // Back Alley Brawl
+			vars.missionAddresses.Add(0x421608);  // Jury Fury
+			vars.missionAddresses.Add(0x42160C);  // Riot
+			vars.missionAddresses.Add(0x421614);  // Treacherous Swine
+			vars.missionAddresses.Add(0x421618);  // Mall Shootout
+			vars.missionAddresses.Add(0x42161C);  // Guardian Angels
+			vars.missionAddresses.Add(0x42162C);  // The Chase
+			vars.missionAddresses.Add(0x421630);  // Phnom Penh '86
+			vars.missionAddresses.Add(0x421634);  // The Fastest Boat
+			vars.missionAddresses.Add(0x421638);  // Supply and Demand
+			vars.missionAddresses.Add(0x421620);  // Sir Yes Sir
+			vars.missionAddresses.Add(0x421648);  // Death Row
+			vars.missionAddresses.Add(0x42163C);  // Rub Out
+			vars.missionAddresses.Add(0x4216A8);  // Shakedown
+		}
+		
+		///////////////////// C O L L E C T A B L E S /////////////////////
+		else if (vars.category.Contains("package") || vars.category.Contains("rob") || vars.category.Contains("stunt") ||
+			vars.category.Contains("jump") || vars.category.Contains("rampage")) {}
+		
 		///////////////////////////////////////////////////////////////////
 		else 
 		{
@@ -159,11 +183,64 @@ init
 	vars.gameState = new MemoryWatcher<int>(new DeepPointer(0x5B5F10+vars.offset));
 	
 	// Last split stuff for any% on Keep Your Friends Close, not exactly sure what the values represent but they work!
-	if (vars.category.Contains("any%") || vars.category.Contains("beat the game"))
+	if (vars.category.Contains("any") || vars.category.Contains("beat the game"))
 	{
 		vars.kyfc1 = new MemoryWatcher<byte>(new DeepPointer(0x426104+vars.offset));
 		vars.kyfc2 = new MemoryWatcher<int>(new DeepPointer(0x425DAC+vars.offset));
 		vars.kyfc3 = new MemoryWatcher<int>(new DeepPointer(0x426100+vars.offset));
+	}
+	
+	// Init section for collectable runs. [nice conditions]
+	// For "simplicity" reasons, mixed runs (for example: packages + stunts) are not supported.
+	// Nobody does it anyway, but in case someone attempts it, the first category will override any other.
+	// Interesting thing is "mission type" and "collectable type" run mix will actually work.
+	else if (vars.category.Contains("package") || vars.category.Contains("rob") || vars.category.Contains("stunt") ||
+			vars.category.Contains("jump") || vars.category.Contains("rampage"))
+	{
+		vars.collectableIndex = 0;
+		
+		// You can specify when autosplitter splits by adding values (separated by commas)
+		// IN ASCENDING ORDER to vars.collectableSplitOn arrays.
+		
+		////////////// 1 0 0   H I D D E N   P A C K A G E S //////////////
+		if (vars.category.Contains("package"))
+		{
+			// Set up memory watcher for collected packages counter
+			vars.collectable = new MemoryWatcher<int>(new DeepPointer(0x4226E8+vars.offset));
+			
+			// By default it splits on 100 packages (max value)
+			vars.collectableSplitOn = new int[] { 100 };
+		}
+		
+		//////////////////// A L L   R O B B E R I E S ////////////////////
+		else if (vars.category.Contains("rob"))
+		{
+			// Set up memory watcher for completed robberies counter
+			vars.collectable = new MemoryWatcher<int>(new DeepPointer(0x422A6C+vars.offset));
+			
+			// By default it splits on 15 robberies (max value)
+			vars.collectableSplitOn = new int[] { 15 };
+		}
+		
+		/////////// A L L   U N I Q U E   S T U N T   J U M P S ///////////
+		else if (vars.category.Contains("stunt") || vars.category.Contains("jump"))
+		{
+			// Set up memory watcher for completed USJs counter
+			vars.collectable = new MemoryWatcher<int>(new DeepPointer(0x421EDC+vars.offset));
+			
+			// By default it splits on 36 USJs (max value)
+			vars.collectableSplitOn = new int[] { 36 };
+		}
+		
+		///////////////////// A L L   R A M P A G E S /////////////////////
+		else  if (vars.category.Contains("rampage"))
+		{
+			// Set up memory watcher for completed rampages counter
+			vars.collectable = new MemoryWatcher<int>(new DeepPointer(0x42286C+vars.offset));
+			
+			// By default it splits on 35 rampages (max value)
+			vars.collectableSplitOn = new int[] { 35 };
+		}
 	}
 }
 
@@ -179,7 +256,7 @@ update
 	
 	// Keeping a few extra memory watchers up to date for the current frame.
 	vars.gameState.Update(game);
-	if (vars.category.Contains("any%") || vars.category.Contains("beat the game"))
+	if (vars.category.Contains("any") || vars.category.Contains("beat the game"))
 	{
 		vars.kyfc1.Update(game);
 		vars.kyfc2.Update(game);
@@ -221,8 +298,27 @@ update
 		else {vars.checkCurrentMission = true;}
 	}
 	
+	// Collectables
+	else if (vars.category.Contains("package") || vars.category.Contains("rob") || vars.category.Contains("stunt") ||
+			vars.category.Contains("jump") || vars.category.Contains("rampage"))
+	{
+		vars.collectable.Update(game);
+		
+		// Go back to the array's beginning on reset.
+		if (vars.collectable.Current == 0 && vars.collectableIndex != 0) {
+			vars.collectableIndex = 0;
+		}
+		
+		// Split when number of required collectables for next split equals the one ingame.
+		if (vars.collectable.Old < vars.collectableSplitOn[vars.collectableIndex] && vars.collectable.Current == vars.collectableSplitOn[vars.collectableIndex])
+		{
+			vars.doSplit = true;
+			vars.collectableIndex++;
+		}
+	}
+	
 	// Final split for any% (when control is lost on Keep Your Friends Closer). [this is a little bit dirty but should work]
-	else if (vars.category.Contains("any%") || vars.category.Contains("beat the game"))
+	else if (vars.category.Contains("any") || vars.category.Contains("beat the game"))
 	{
 		if (vars.kyfc1.Current == 245 && vars.kyfc2.Current > vars.kyfc3.Current) {vars.doSplit = true;}
 	}
