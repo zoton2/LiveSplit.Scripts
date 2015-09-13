@@ -54,6 +54,7 @@ init
 			vars.missionAddresses.Add(0x4216A8);  // Shakedown
 			vars.missionAddresses.Add(0x4216AC);  // Bar Brawl
 			vars.missionAddresses.Add(0x4216B0);  // Cop Land
+			//vars.missionAddresses.Add(0x421BFC);  // Checkpoint Charlie
 			vars.missionAddresses.Add(0x4216C0);  // Spilling the Beans
 			vars.missionAddresses.Add(0x4216C4);  // Hit the Courier
 			vars.missionAddresses.Add(0x4216B4);  // Cap the Collector
