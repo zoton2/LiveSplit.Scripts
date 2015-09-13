@@ -10,22 +10,32 @@
 **What is Autosplit? (by default):**
 
 - Starting split (after the new game loading is finished).
-- Every mission that is required for Any%, if your category is set to that in LiveSplit.
-- Ending split (on "Keep Your Friends Close..."; loss of control for Any% and after credits for anything else).
-- Reset on the main loading screen (includes loading a save after a fresh start of the game; see bug below), if timer is currently running.
+- Every mission that is required for Any% or Shakedown, if your category is set to that in LiveSplit.
+- Ending split (on "Keep Your Friends Close..."; loss of control for Any% and after credits for anything else. Also some other things for misc. categories; see below).
+- Reset if starting a new game while currently in the game from the pause menu, if timer is currently running.
 
-**Versions known to work:**
+**Categories supported:**
+- Any%/Beat the Game (splits for every mission required in the Japanese run; can also split for Checkpoint Charlie.)
+- All Missions (needs some editing of the script for the missions you want to spit for.)
+- Beat Shakedown (splits for every mission required)
+- 100 Hidden Packages (splits after collecting all)
+- All Robberies (splits are doing all)
+- All Unique Stunt Jumps (splits are doing all)
+- All Rampages (splits are doing all)
+- Anything else splits after the credits.
 
-- 1.0
-- 1.1
-- Steam
-- Japanese
+**Versions that should work:**
+
+- 1.0 (needs testing)
+- 1.1 (needs testing)
+- Steam (could do with some more testing)
+- Japanese (most common version)
 
 **Known bugs:**
 
-- Loading a save after your game has crashed/closed will restart the splits. See [this issue](https://github.com/zoton2/LiveSplit.Scripts/issues/2).
+- If the timer is running and you boot the game up fresh and start a new game, the timer will not be reset. This is a side effect of us fixing the "loading a save after your game has crashed/closed will restart the splits" bug, but is actually useful for certain things (e.g. SRL races) so it will stay this way for now.
 
-**Thanks To:**
+**Thanks to:**
 
 - Lighnat0r for the memory addresses.
-- Pitpo for adding basic category support/All Missions support.
+- Pitpo for adding basic category support/All Missions support, also fixed some bugs.
