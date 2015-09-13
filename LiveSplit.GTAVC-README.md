@@ -10,18 +10,20 @@
 **What is Autosplit? (by default):**
 
 - Starting split (after the new game loading is finished).
-- Every mission that is required for Any% or Shakedown, if your category is set to that in LiveSplit.
+- Every mission that is required for Any% (Japanese run) or Shakedown, if your category is set to that in LiveSplit.
 - Ending split (on "Keep Your Friends Close..."; loss of control for Any% and after credits for anything else. Also some other things for misc. categories; see below).
 - Reset if starting a new game while currently in the game from the pause menu, if timer is currently running.
 
 **Categories supported:**
+
+To make these work, just make sure your category is set correctly in your splits.
 - Any%/Beat the Game (splits for every mission required in the Japanese run; can also split for Checkpoint Charlie.)
 - All Missions (needs some editing of the script for the missions you want to spit for.)
 - Beat Shakedown (splits for every mission required)
-- 100 Hidden Packages (splits after collecting all)
-- All Robberies (splits are doing all)
-- All Unique Stunt Jumps (splits are doing all)
-- All Rampages (splits are doing all)
+- 100 Hidden Packages (by default, splits after collecting all)
+- All Robberies (by default, splits on doing all)
+- All Unique Stunt Jumps (by default, splits on doing all)
+- All Rampages (by default, splits on doing all)
 - Anything else splits after the credits.
 
 **Versions that should work:**
