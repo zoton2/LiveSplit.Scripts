@@ -1,6 +1,7 @@
 state("gta-vc")
 {
 	byte gameVersion : 0x208578;  // Used to detect the version; same for each version obviously.
+	                              // Doesn't seem to work very well for Steam though.
 }
 
 // These need to exist so they are actually found as versions by the code below.
@@ -15,6 +16,7 @@ init
 	vars.doStart = false;
 	vars.doReset = false;
 	vars.doSplit = false;
+	vars.offset = 0;
 	
 	// Read category from split file
 	vars.category = timer.Run.CategoryName.ToLower();
@@ -153,31 +155,38 @@ init
 		}
 	}
 	
-	// Detects current game version.
-	switch ((int)current.gameVersion)
+	// Workaround for identifying the Steam version correctly.
+	// If the game is started after LiveSplit, the other method doesn't work.
+	if (modules.First().ModuleMemorySize == 6905856)
 	{
-		case 93:
-			version = "1.0";
-			vars.offset = 0;
-			break;
-		case 129:
-			version = "1.1";
-			vars.offset = 8;
-			break;
-		case 91:
-			version = "steam";
-			vars.offset = -0xFF8;
-			break;
-		case 68:
-			version = "jp";
-			vars.offset = -0x2FF8;
-			break;
+		version = "steam";
+		vars.offset = -0xFF8;
+	}
+	
+	else {
+		// Detects current game version if not Steam.
+		switch ((int)current.gameVersion)
+		{
+			case 93:
+				version = "1.0";
+				vars.offset = 0;
+				break;
+			case 129:
+				version = "1.1";
+				vars.offset = 8;
+				break;
+			case 68:
+				version = "jp";
+				vars.offset = -0x2FF8;
+				break;
+		}
 	}
 	
 	// Makes a copy of the mission memory addresses list (so it can be edited and then restored on reset).
 	vars.missionAddressesCurrent = new List<int>(vars.missionAddresses);
 	
-	if (vars.missionAddressesCurrent.Count != 0) {
+	if (vars.missionAddressesCurrent.Count != 0)
+	{
 		vars.currentMissionWatcher = new MemoryWatcher<byte>(new DeepPointer(vars.missionAddressesCurrent[0]+vars.offset));
 		
 		// Used to ignore the check for a single frame (not sure if actually needed but leaving in anyway).
@@ -185,10 +194,11 @@ init
 	}
 	
 	// Used to know when the player starts a new game.
-	vars.gameState = new MemoryWatcher<int>(new DeepPointer(0x5B5F10+vars.offset));
+	if (version == "jp") {vars.gameState = new MemoryWatcher<int>(new DeepPointer(0x5B2F18));}
+	else {vars.gameState = new MemoryWatcher<int>(new DeepPointer(0x5B5F08+vars.offset));}
 	
 	// Used to know when the player loads a saved game.
-	vars.LoadingCheck = new MemoryWatcher<byte>(new DeepPointer(0x574B74+vars.offset));
+	vars.loadingCheck = new MemoryWatcher<byte>(new DeepPointer(0x574B74+vars.offset));
 	
 	// Last split stuff for any% on Keep Your Friends Close, not exactly sure what the values represent but they work!
 	if (vars.category.Contains("any") || vars.category.Contains("beat the game"))
@@ -257,14 +267,14 @@ update
 	vars.doStart = false;
 	vars.doReset = false;
 	vars.doSplit = false;
-	
+
 	// unknown version, don't do anything
 	if (version == "")
 		return;
 	
 	// Keeping a few extra memory watchers up to date for the current frame.
 	vars.gameState.Update(game);
-	vars.LoadingCheck.Update(game);
+	vars.loadingCheck.Update(game);
 	if (vars.category.Contains("any") || vars.category.Contains("beat the game"))
 	{
 		vars.kyfc1.Update(game);
@@ -279,7 +289,7 @@ update
 		if (vars.gameState.Old == 12 && vars.gameState.Current == 13) {vars.doStart = true;}
 		
 		// Resetting the splits if needed.
-		if (vars.gameState.Old != 12 && vars.gameState.Current == 12 && vars.LoadingCheck.Old != 1) {vars.doReset = true;}
+		if (vars.gameState.Old != 12 && vars.gameState.Current == 12 && vars.loadingCheck.Old != 1) {vars.doReset = true;}
 	}
 	
 	else
@@ -288,7 +298,7 @@ update
 		if (vars.gameState.Old == 8 && vars.gameState.Current == 9) {vars.doStart = true;}
 		
 		// Resetting the splits if needed.
-		if (vars.gameState.Old != 8 && vars.gameState.Current == 8 && vars.LoadingCheck.Old != 1) {vars.doReset = true;}
+		if (vars.gameState.Old != 8 && vars.gameState.Current == 8 && vars.loadingCheck.Old != 1) {vars.doReset = true;}
 	}
 	
 	// All missions (besides the final split).
