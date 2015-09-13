@@ -11,6 +11,11 @@ state("gta-vc", "jp") {}
 
 init
 {
+	// Declaring variables.
+	vars.doStart = false;
+	vars.doReset = false;
+	vars.doSplit = false;
+	
 	// Read category from split file
 	vars.category = timer.Run.CategoryName.ToLower();
 	
