@@ -158,6 +158,9 @@ init
 	// Used to know when the player starts a new game.
 	vars.gameState = new MemoryWatcher<int>(new DeepPointer(0x5B5F10+vars.offset));
 	
+	// Used to know when the player loads a saved game.
+	vars.LoadingCheck = new MemoryWatcher<byte>(new DeepPointer(0x574B74+vars.offset));
+	
 	// Last split stuff for any% on Keep Your Friends Close, not exactly sure what the values represent but they work!
 	if (vars.category.Contains("any%") || vars.category.Contains("beat the game"))
 	{
@@ -179,6 +182,7 @@ update
 	
 	// Keeping a few extra memory watchers up to date for the current frame.
 	vars.gameState.Update(game);
+	vars.LoadingCheck.Update(game);
 	if (vars.category.Contains("any%") || vars.category.Contains("beat the game"))
 	{
 		vars.kyfc1.Update(game);
@@ -193,7 +197,7 @@ update
 		if (vars.gameState.Old == 12 && vars.gameState.Current == 13) {vars.doStart = true;}
 		
 		// Resetting the splits if needed.
-		if (vars.gameState.Old != 12 && vars.gameState.Current == 12) {vars.doReset = true;}
+		if (vars.gameState.Old != 12 && vars.gameState.Current == 12 && vars.LoadingCheck.Old != 1) {vars.doReset = true;}
 	}
 	
 	else
@@ -202,7 +206,7 @@ update
 		if (vars.gameState.Old == 8 && vars.gameState.Current == 9) {vars.doStart = true;}
 		
 		// Resetting the splits if needed.
-		if (vars.gameState.Old != 8 && vars.gameState.Current == 8) {vars.doReset = true;}
+		if (vars.gameState.Old != 8 && vars.gameState.Current == 8 && vars.LoadingCheck.Old != 1) {vars.doReset = true;}
 	}
 	
 	// All missions (besides the final split).
