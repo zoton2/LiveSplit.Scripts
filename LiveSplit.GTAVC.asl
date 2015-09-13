@@ -304,16 +304,15 @@ update
 	{
 		vars.collectable.Update(game);
 		
-		// Go back to the array's beginning on reset.
-		if (vars.collectable.Current == 0 && vars.collectableIndex != 0) {
-			vars.collectableIndex = 0;
-		}
-		
 		// Split when number of required collectables for next split equals the one ingame.
 		if (vars.collectable.Old < vars.collectableSplitOn[vars.collectableIndex] && vars.collectable.Current == vars.collectableSplitOn[vars.collectableIndex])
 		{
 			vars.doSplit = true;
-			vars.collectableIndex++;
+			
+			if (vars.collectableIndex < vars.collectableSplitOn.Length-1)
+			{
+				vars.collectableIndex++;
+			}
 		}
 	}
 	
@@ -334,6 +333,12 @@ start
 		if (vars.missionAddressesCurrent.Count != 0) {
 			vars.currentMissionWatcher = new MemoryWatcher<byte>(new DeepPointer(vars.missionAddressesCurrent[0]+vars.offset));
 			vars.checkCurrentMission = false;
+		}
+		
+		if (vars.category.Contains("package") || vars.category.Contains("rob") || vars.category.Contains("stunt") ||
+			vars.category.Contains("jump") || vars.category.Contains("rampage"))
+		{
+			vars.collectableIndex = 0;
 		}
 	}
 	
