@@ -291,7 +291,7 @@ update
 	if (version == "jp")
 	{
 		// Starting the splits after the initial new game load is done.
-		if (vars.gameState.Old == 12 && vars.gameState.Current == 13) {vars.doStart = true;}
+		if (vars.gameState.Old == 12 && vars.gameState.Current == 13 && vars.loadingCheck.Current == 1) {vars.doStart = true;}
 		
 		// Resetting the splits if needed.
 		if (vars.gameState.Old == 13 && vars.gameState.Current == 12 && currentRealTimeInSeconds > 19) {vars.doReset = true;}
@@ -300,7 +300,7 @@ update
 	else
 	{
 		// Starting the splits after the initial new game load is done.
-		if (vars.gameState.Old == 8 && vars.gameState.Current == 9) {vars.doStart = true;}
+		if (vars.gameState.Old == 8 && vars.gameState.Current == 9 && vars.loadingCheck.Current == 1) {vars.doStart = true;}
 		
 		// Resetting the splits if needed.
 		if (vars.gameState.Old == 9 && vars.gameState.Current == 8 && currentRealTimeInSeconds > 19) {vars.doReset = true;}
