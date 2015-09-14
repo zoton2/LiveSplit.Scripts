@@ -268,7 +268,7 @@ update
 	vars.doStart = false;
 	vars.doReset = false;
 	vars.doSplit = false;
-
+	
 	// unknown version, don't do anything
 	if (version == "")
 		return;
@@ -283,6 +283,10 @@ update
 		vars.kyfc3.Update(game);
 	}
 	
+	// Works out the current real time in seconds, so it can be compared to.
+	var currentRealTime = timer.CurrentTime.RealTime.ToString();
+	var currentRealTimeInSeconds = TimeSpan.Parse(currentRealTime).TotalSeconds;
+	
 	// Japanese game state is shifted by +4 (due to more intro movies) so needs a separate check.
 	if (version == "jp")
 	{
@@ -290,7 +294,7 @@ update
 		if (vars.gameState.Old == 12 && vars.gameState.Current == 13) {vars.doStart = true;}
 		
 		// Resetting the splits if needed.
-		if (vars.gameState.Old != 12 && vars.gameState.Current == 12 && vars.loadingCheck.Old != 1) {vars.doReset = true;}
+		if (vars.gameState.Old == 13 && vars.gameState.Current == 12 && currentRealTimeInSeconds > 19) {vars.doReset = true;}
 	}
 	
 	else
@@ -299,7 +303,7 @@ update
 		if (vars.gameState.Old == 8 && vars.gameState.Current == 9) {vars.doStart = true;}
 		
 		// Resetting the splits if needed.
-		if (vars.gameState.Old != 8 && vars.gameState.Current == 8 && vars.loadingCheck.Old != 1) {vars.doReset = true;}
+		if (vars.gameState.Old == 9 && vars.gameState.Current == 8 && currentRealTimeInSeconds > 19) {vars.doReset = true;}
 	}
 	
 	// All missions (besides the final split).
