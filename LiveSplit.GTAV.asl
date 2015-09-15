@@ -25,13 +25,12 @@ state("GTA5", "RGSC4631")
 	int loading : 0x21D3DB0;
 }
 
-
 init
 {
 	// Declaring variables.
 	vars.isLoading = true;
 	
-	switch (game.MainModule.ModuleMemorySize)
+	switch (modules.First().ModuleMemorySize)
 	{
 		case 70718464:
 			version = "RGSC3722";
