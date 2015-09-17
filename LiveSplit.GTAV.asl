@@ -30,9 +30,6 @@ state("GTA5", "Steam4631")
 
 init
 {
-	// Declaring variables.
-	vars.isLoading = false;
-	
 	switch (modules.First().ModuleMemorySize)
 	{
 		case 70718464:
@@ -53,14 +50,8 @@ init
 	}
 }
 
-update
+isLoading
 {
-	vars.isLoading = false;
-	
-	if (version == "")
-		return;
-		
-	if (current.loading > 0) {vars.isLoading = true;}
+	if (version != "")
+		return current.loading > 0;
 }
-
-isLoading {return vars.isLoading;}
