@@ -18,7 +18,7 @@
 
 To make these work, just make sure your category is set correctly in your splits.
 - Any%/Beat the Game (splits for every mission required in the Japanese run; can also split for Checkpoint Charlie.)
-- All Missions (needs some editing of the script for the missions you want to spit for.)
+- All Missions (needs some editing of the script for the missions you want to split for.)
 - Beat Shakedown (splits for every mission required)
 - 100 Hidden Packages (by default, splits after collecting all)
 - All Robberies (by default, splits on doing all)
