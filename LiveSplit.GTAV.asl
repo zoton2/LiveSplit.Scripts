@@ -1,5 +1,3 @@
-// Should work, just needs checking if this works the same as the external app already available.
-
 state("GTA5")
 {
 	// unknown/default version
@@ -33,7 +31,7 @@ state("GTA5", "Steam4631")
 init
 {
 	// Declaring variables.
-	vars.isLoading = true;
+	vars.isLoading = false;
 	
 	switch (modules.First().ModuleMemorySize)
 	{
@@ -57,12 +55,12 @@ init
 
 update
 {
+	vars.isLoading = false;
+	
 	if (version == "")
 		return;
-	
-	vars.isLoading = true;
 		
-	if (current.loading == 0) {vars.isLoading = false;}
+	if (current.loading > 0) {vars.isLoading = true;}
 }
 
 isLoading {return vars.isLoading;}
