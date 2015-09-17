@@ -38,12 +38,14 @@ init
 		if (vars.category.Contains("any") || vars.category.Contains("beat the game"))
 		{
 			vars.missionAddresses.Add(0x421600);  // The Party
+			//vars.missionAddresses.Add(0x4233AC);  // Sprint tutorial after phone pickup shown (closest thing to phone pickup that doesn't involve local variables)
 			vars.missionAddresses.Add(0x421604);  // Back Alley Brawl
 			vars.missionAddresses.Add(0x421608);  // Jury Fury
 			vars.missionAddresses.Add(0x42160C);  // Riot
 			vars.missionAddresses.Add(0x421614);  // Treacherous Swine
 			vars.missionAddresses.Add(0x421618);  // Mall Shootout
 			vars.missionAddresses.Add(0x42161C);  // Guardian Angels
+			//vars.missionAddresses.Add(0x422494);  // Diaz phonecall received (Starfish Island opened)
 			vars.missionAddresses.Add(0x42162C);  // The Chase
 			vars.missionAddresses.Add(0x421630);  // Phnom Penh '86
 			vars.missionAddresses.Add(0x421634);  // The Fastest Boat
@@ -75,6 +77,7 @@ init
 			//vars.missionAddresses.Add(0x421728);  // Road Kill
 			//vars.missionAddresses.Add(0x421618);  // Mall Shootout
 			//vars.missionAddresses.Add(0x42161C);  // Guardian Angels
+			//vars.missionAddresses.Add(0x422494);  // Diaz phonecall received (Starfish Island opened)
 			//vars.missionAddresses.Add(0x42162C);  // The Chase
 			//vars.missionAddresses.Add(0x42172C);  // Waste The Wife
 			//vars.missionAddresses.Add(0x421630);  // Phnom Penh '86
