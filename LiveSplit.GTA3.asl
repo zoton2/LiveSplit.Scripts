@@ -1,10 +1,6 @@
 state("gta3")
 {
-	// Used to detect the version; each version has a different memory address.
-	// The correct memory address will have the value 1407551829.
-	int versionCheck10 : 0x5C1E70;     // Version 1.0 NoCD
-	int versionCheck11 : 0x5C2130;     // Version 1.1 NoCD
-	//int versionCheckSteam : 0x1C6FD0;  // Version 1.1 Steam
+	// unknown/default version
 }
 
 // These need to exist so they are actually found as versions by the code below.
@@ -75,17 +71,25 @@ init
 	}
 	
 	// Detects current game version if not Steam.
-	else {
-		if (current.versionCheck10 == 1407551829)
+	else
+	{
+		var versionCheck = memory.ReadValue<int>(modules.First().BaseAddress+0x1C1E70);
+		
+		if (versionCheck == 1407551829)
 		{
 			version = "1.0";
 			vars.offset = -0x10140;
 		}
 		
-		else if (current.versionCheck11 == 1407551829)
+		else
 		{
-			version = "1.1";
-			vars.offset = -0x10140;
+			versionCheck = memory.ReadValue<int>(modules.First().BaseAddress+0x1C2130);
+			
+			if (versionCheck == 1407551829)
+			{
+				version = "1.1";
+				vars.offset = -0x10140;
+			}
 		}
 	}
 	
