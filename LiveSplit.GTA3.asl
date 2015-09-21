@@ -29,7 +29,41 @@ init
 		// Makes a list of all the memory addresses for each mission, in order.
 		vars.missionAddresses = new List<int>();
 		
-		// make a list of memory addresses here
+		if (vars.category.Contains("any") || vars.category.Contains("beat the game"))
+		{
+			vars.missionAddresses.Add(0x35B75C);  // Give Me Liberty and Luigi's Girls
+			vars.missionAddresses.Add(0x35B76C);  // Don't Spank Ma Bitch Up
+			vars.missionAddresses.Add(0x35B770);  // Drive Misty For Me
+			vars.missionAddresses.Add(0x35B780);  // Mike Lips Last Lunch
+			vars.missionAddresses.Add(0x35B784);  // Farewell 'Chunky' Lee Chong
+			vars.missionAddresses.Add(0x35B788);  // Van Heist
+			vars.missionAddresses.Add(0x35B78C);  // Cipriani's Chauffeur
+			vars.missionAddresses.Add(0x35B79C);  // Taking Out the Laundry
+			vars.missionAddresses.Add(0x35B7A0);  // The Pick-Up
+			vars.missionAddresses.Add(0x35B7A4);  // Salvatore's Called a Meeting
+			vars.missionAddresses.Add(0x35B7B4);  // Chaperone
+			vars.missionAddresses.Add(0x35B7B8);  // Cutting the Grass
+			vars.missionAddresses.Add(0x35B7A8);  // Triads and Tribulations
+			vars.missionAddresses.Add(0x35B7AC);  // Blow Fish
+			//vars.missionAddresses.Add(0x35B7BC);  // Bomb Da Base: Act I
+			vars.missionAddresses.Add(0x35B7C0);  // Bomb Da Base: Act II
+			vars.missionAddresses.Add(0x35B7C4);  // Last Requests
+			vars.missionAddresses.Add(0x35B878);  // Sayonara Salvatore
+			vars.missionAddresses.Add(0x35B87C);  // Under Surveillance
+			vars.missionAddresses.Add(0x35B880);  // Paparazzi Purge
+			vars.missionAddresses.Add(0x35B884);  // Payday For Ray
+			vars.missionAddresses.Add(0x35B890);  // Silence The Sneak
+			vars.missionAddresses.Add(0x35B894);  // Arms Shortage
+			vars.missionAddresses.Add(0x35B898);  // Evidence Dash
+			vars.missionAddresses.Add(0x35B8C4);  // Liberator
+			vars.missionAddresses.Add(0x35B8C8);  // Waka-Gashira Wipeout
+			vars.missionAddresses.Add(0x35B8CC);  // A Drop In The Ocean
+			vars.missionAddresses.Add(0x35B8FC);  // Grand Theft Aero
+			vars.missionAddresses.Add(0x35B910);  // Bait
+			vars.missionAddresses.Add(0x35B914);  // Espresso-2-Go!
+			vars.missionAddresses.Add(0x35B918);  // S.A.M. + Ransom
+			//vars.missionAddresses.Add(0x35B948);  // The Exchange
+		}
 	}
 	
 	// Workaround for identifying the Steam version correctly.
