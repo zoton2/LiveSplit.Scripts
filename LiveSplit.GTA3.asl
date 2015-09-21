@@ -100,8 +100,11 @@ init
 		vars.checkCurrentMission = false;
 	}
 	
-	// Used to know when the player starts a new game.
+	// Used to know when the player skips the initial cutscene and starts the run.
 	vars.skipInitialCutsceneCheck = new MemoryWatcher<int>(new DeepPointer(0x35CC50+vars.offset));
+	
+	// Used to know what state the game is currently in.
+	vars.gameState = new MemoryWatcher<int>(new DeepPointer(0x505A2C+vars.offset));
 }
 
 update
@@ -116,6 +119,7 @@ update
 	
 	// Keeping a few extra memory watchers up to date for the current frame.
 	vars.skipInitialCutsceneCheck.Update(game);
+	vars.gameState.Update(game);
 	
 	// Works out the current real time in seconds, so it can be compared to.
 	// going to use ~5 seconds for GTA3 just to be safe for SRL races and such, might need to be higher?
@@ -124,6 +128,11 @@ update
 	
 	// Starting the splits after the initial cutscene skip.
 	if (vars.skipInitialCutsceneCheck.Old == 0 && vars.skipInitialCutsceneCheck.Current == 3841) {vars.doStart = true;}
+	
+	// Resetting the splits if needed.
+	if (vars.gameState.Old == 9 && vars.gameState.Current == 8 && currentRealTimeInSeconds > 5) {
+		vars.doReset = true;
+	}
 	
 	// All missions (besides the final split).
 	if (vars.missionAddressesCurrent.Count != 0)
