@@ -67,19 +67,7 @@ init
 	}
 	
 	// Used to know when the player starts a new game.
-	//if (version == "jp") {vars.gameState = new MemoryWatcher<int>(new DeepPointer(0x5B2F18));}
-	//else {vars.gameState = new MemoryWatcher<int>(new DeepPointer(0x5B5F08+vars.offset));}
-	
-	// Used to know when the player loads a saved game.
-	//vars.loadingCheck = new MemoryWatcher<byte>(new DeepPointer(0x574B74+vars.offset));
-	
-	// Last split stuff for any% on Keep Your Friends Close, not exactly sure what the values represent but they work!
-	/*if (vars.category.Contains("any") || vars.category.Contains("beat the game"))
-	{
-		vars.kyfc1 = new MemoryWatcher<byte>(new DeepPointer(0x426104+vars.offset));
-		vars.kyfc2 = new MemoryWatcher<int>(new DeepPointer(0x425DAC+vars.offset));
-		vars.kyfc3 = new MemoryWatcher<int>(new DeepPointer(0x426100+vars.offset));
-	}*/
+	vars.skipInitialCutsceneCheck = new MemoryWatcher<int>(new DeepPointer(0x35CC50+vars.offset));
 }
 
 update
@@ -93,38 +81,15 @@ update
 		return;
 	
 	// Keeping a few extra memory watchers up to date for the current frame.
-	//vars.gameState.Update(game);
-	//vars.loadingCheck.Update(game);
-	/*if (vars.category.Contains("any") || vars.category.Contains("beat the game"))
-	{
-		vars.kyfc1.Update(game);
-		vars.kyfc2.Update(game);
-		vars.kyfc3.Update(game);
-	}*/
+	vars.skipInitialCutsceneCheck.Update(game);
 	
 	// Works out the current real time in seconds, so it can be compared to.
 	// going to use ~5 seconds for GTA3 just to be safe for SRL races and such, might need to be higher?
 	var currentRealTime = timer.CurrentTime.RealTime.ToString();
 	var currentRealTimeInSeconds = TimeSpan.Parse(currentRealTime).TotalSeconds;
 	
-	// Japanese game state is shifted by +4 (due to more intro movies) so needs a separate check.
-	/*if (version == "jp")
-	{
-		// Starting the splits after the initial new game load is done.
-		if (vars.gameState.Old == 12 && vars.gameState.Current == 13 && vars.loadingCheck.Current == 1) {vars.doStart = true;}
-		
-		// Resetting the splits if needed.
-		if (vars.gameState.Old == 13 && vars.gameState.Current == 12 && currentRealTimeInSeconds > 5) {vars.doReset = true;}
-	}*/
-	
-	/*else
-	{
-		// Starting the splits after the initial new game load is done.
-		if (vars.gameState.Old == 8 && vars.gameState.Current == 9 && vars.loadingCheck.Current == 1) {vars.doStart = true;}
-		
-		// Resetting the splits if needed.
-		if (vars.gameState.Old == 9 && vars.gameState.Current == 8 && currentRealTimeInSeconds > 5) {vars.doReset = true;}
-	}*/
+	// Starting the splits after the initial cutscene skip.
+	if (vars.skipInitialCutsceneCheck.Old == 0 && vars.skipInitialCutsceneCheck.Current == 3841) {vars.doStart = true;}
 	
 	// All missions (besides the final split).
 	if (vars.missionAddressesCurrent.Count != 0)
@@ -141,12 +106,6 @@ update
 		
 		else {vars.checkCurrentMission = true;}
 	}
-	
-	// Final split for any% (when control is lost on Keep Your Friends Closer). [this is a little bit dirty but should work]
-	/*else if (vars.category.Contains("any") || vars.category.Contains("beat the game"))
-	{
-		if (vars.kyfc1.Current == 245 && vars.kyfc2.Current > vars.kyfc3.Current) {vars.doSplit = true;}
-	}*/
 }
 
 start
