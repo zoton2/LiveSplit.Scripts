@@ -69,7 +69,7 @@ init
 		}
 		
 		///////////////////// A L L   M I S S I O N S /////////////////////
-		// Mission order may need changing (apparently Omega changed his order very recently but I don't know it).
+		// Mission order may need changing (I think this is Omega's new route).
 		// It's important to list missions here in the exact same order you do them during the run.
 		// You may want to rearrange this list for your needs.
 		// It's recommended to split at least every few missions in case something unexpected happens in the run.
@@ -91,6 +91,7 @@ init
 			vars.missionAddresses.Add(0x35B838);  // Turismo
 			vars.missionAddresses.Add(0x35B794);  // The Getaway
 			vars.missionAddresses.Add(0x35B7A0);  // The Pick-Up
+			vars.missionAddresses.Add(0x35B970);  // Patriot Playground
 			vars.missionAddresses.Add(0x35B7A4);  // Salvatore's Called a Meeting
 			vars.missionAddresses.Add(0x35B7B4);  // Chaperone
 			vars.missionAddresses.Add(0x35B7B8);  // Cutting the Grass
@@ -103,7 +104,6 @@ init
 			vars.missionAddresses.Add(0x35B7EC);  // Big 'N' Veiny
 			vars.missionAddresses.Add(0x35B9F0);  // RC Mafia Massacre
 			vars.missionAddresses.Add(0x35B7AC);  // Blow Fish
-			vars.missionAddresses.Add(0x35B970);  // Patriot Playground
 			//vars.missionAddresses.Add(0x35B7BC);  // Bomb Da Base: Act I
 			vars.missionAddresses.Add(0x35B7C0);  // Bomb Da Base: Act II
 			vars.missionAddresses.Add(0x35B7C4);  // Last Requests
@@ -140,14 +140,14 @@ init
 			vars.missionAddresses.Add(0x35B928);  // Toyminator
 			vars.missionAddresses.Add(0x35B92C);  // Rigged to Blow
 			vars.missionAddresses.Add(0x35B930);  // Bullion Run
-			vars.missionAddresses.Add(0x35B934);  // Rumble
-			vars.missionAddresses.Add(0x35B978);  // Gripped!
 			vars.missionAddresses.Add(0x35B910);  // Bait
 			vars.missionAddresses.Add(0x35B904);  // Decoy
 			vars.missionAddresses.Add(0x35B908);  // Love's Disappearance
 			vars.missionAddresses.Add(0x35B914);  // Espresso-2-Go!
 			vars.missionAddresses.Add(0x35B918);  // S.A.M. + Ransom
 			vars.missionAddresses.Add(0x35B948);  // The Exchange
+			vars.missionAddresses.Add(0x35B934);  // Rumble
+			vars.missionAddresses.Add(0x35B978);  // Gripped!
 		}
 		
 		///////////////////// K I N G D O M   C O M E /////////////////////
