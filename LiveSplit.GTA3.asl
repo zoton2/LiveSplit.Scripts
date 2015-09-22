@@ -109,7 +109,7 @@ init
 			//vars.missionAddresses.Add(0x35B7C0);  // Bomb Da Base: Act II
 			//vars.missionAddresses.Add(0x35B7C4);  // Last Requests
 			//vars.missionAddresses.Add(0x35B878);  // Sayonara Salvatore
-			//vars.missionAddresses.Add(0x35B8D4);  // Bling-Bling Scramble (might not work?)
+			//vars.missionAddresses.Add(0x35B8D4);  // Bling-Bling Scramble
 			//vars.missionAddresses.Add(0x35B87C);  // Under Surveillance
 			//vars.missionAddresses.Add(0x35B8AC);  // Kanbu Bust Out
 			//vars.missionAddresses.Add(0x35B9F8);  // RC Casino Calamity
@@ -172,7 +172,7 @@ init
 			vars.missionAddresses.Add(0x35B7C0);  // Bomb Da Base: Act II
 			vars.missionAddresses.Add(0x35B7C4);  // Last Requests
 			vars.missionAddresses.Add(0x35B878);  // Sayonara Salvatore
-			//vars.missionAddresses.Add(0x35B8D4);  // Bling-Bling Scramble (might not work?)
+			vars.missionAddresses.Add(0x35B8D4);  // Bling-Bling Scramble
 			vars.missionAddresses.Add(0x35B8D8);  // Uzi Rider
 			vars.missionAddresses.Add(0x35B8DC);  // Gangcar Round-Up
 			vars.missionAddresses.Add(0x35B8E0);  // Kingdom Come
