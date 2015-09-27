@@ -293,8 +293,9 @@ update
 	// Final split for any%
 	// That timer variable is used in different missions so we're making sure that we're on The Exchange
 	// by also checking for variable that is set in the very last part of the mission.
-	// Dying/failing the mission doesn't reset this variable, so make sure you don't load an earlier save to do one of the missions
-	// that also use that timer thing. (EIGHT/LUIGI3/TONI3/FRANK2/FRANK3/FRANK4/ASUKA4/KENJI4) Why would you do that anyway?
+	// Dying/failing the mission AFTER killing colombians standing next to Maria doesn't reset this variable, 
+	// so make sure you don't load an earlier save to do one of the missions that also use that timer thing. (EIGHT/LUIGI3/TONI3/FRANK2/FRANK3/FRANK4/ASUKA4/KENJI4)
+	// Why would you do that anyway?
 	// Timer variable is changed exactly as the final cutscene starts.
 	else if (vars.category.Contains("any") || vars.category.Contains("beat the game"))
 	{
