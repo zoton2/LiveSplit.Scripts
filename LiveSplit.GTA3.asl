@@ -4,13 +4,22 @@ state("gta3")
 }
 
 // These need to exist so they are actually found as versions by the code below.
-state("gta3", "1.0") {}
+// Also some variables used in any% final split check are declared here.
+state("gta3", "1.0") 
+{
+	byte exchangeHelipad : 0x34F578;
+	byte exchangeTimer : 0x34B8EC;
+}
 state("gta3", "1.1") 
 {
 	byte exchangeHelipad : 0x34F578;
 	byte exchangeTimer : 0x34B8EC;
 }
-state("gta3", "steam") {}
+state("gta3", "steam") 
+{
+	byte exchangeHelipad : 0x35F6B8;
+	byte exchangeTimer : 0x35BA2C;
+}
 
 init
 {
@@ -283,8 +292,10 @@ update
 	}
 	// Final split for any%
 	// That timer variable is used in different missions so we're making sure that we're on The Exchange
-	// by also checking for variable that is set in the very last part of the mission
-	// Timer variable is changed exactly as the final cutscene starts
+	// by also checking for variable that is set in the very last part of the mission.
+	// Dying/failing the mission doesn't reset this variable, so make sure you don't load an earlier save to do one of the missions
+	// that also use that timer thing. (EIGHT/LUIGI3/TONI3/FRANK2/FRANK3/FRANK4/ASUKA4/KENJI4) Why would you do that anyway?
+	// Timer variable is changed exactly as the final cutscene starts.
 	if (vars.category.Contains("any") || vars.category.Contains("beat the game"))
 	{
 		if (current.exchangeHelipad == 1 && current.exchangeTimer != vars.exchangeTimerOld) {vars.doSplit = true;}
