@@ -11,14 +11,14 @@
 
 - Starting split (once the initial cutscene is skipped or finished).
 - Every mission that is required for Any% or "Kingdom Come", if your category is set to that in LiveSplit.
-- ***(Not on Any%)*** Ending Split: by default, after the credits for All Missions and any other category; after "Kingdom Come" for that category.
+- Ending split (on "The Exchange"; loss of control for Any% and after credits for anything else *except* "Kingdom Come", which is split after that mission).
 - Reset if starting a new game while currently in the game from the pause menu, if timer is currently running.
 
 **Categories supported:**
 
 To make these work, just make sure your category is set correctly in your splits.
-- Any%/Beat the Game (splits for every mission required, *although doesn't split for the last split yet*.)
-- All Missions (needs some editing of the script for the missions you want to split for.)
+- Any%/Beat the Game (splits for every mission required)
+- All Missions (needs some editing of the script for the missions you want to split for)
 - Beat "Kingdom Come" (splits for every mission required)
 - Anything else splits after the credits.
 
@@ -30,10 +30,9 @@ To make these work, just make sure your category is set correctly in your splits
 
 **Known bugs:**
 
-- No split for the ending of Any% yet; still need to find some reliable memory address for it. Just split for it manually yourself for now.
 - If the timer is running and you boot the game up fresh and start a new game, the timer will not be reset. This is so that if the game closes/crashes and you load a save while in a run, the timer is not reset. It is also useful for other things (e.g. SRL races) so it will stay this way for now.
 
 **Thanks to:**
 
 - Lighnat0r for the memory addresses.
-- Pitpo for work on the "Grand Theft Auto: Vice City" autosplitter, which some of the code for this is based off.
+- Pitpo for memory address and work on the "Grand Theft Auto: Vice City" autosplitter, which some of the code for this is based off.
