@@ -5,7 +5,11 @@ state("gta3")
 
 // These need to exist so they are actually found as versions by the code below.
 state("gta3", "1.0") {}
-state("gta3", "1.1") {}
+state("gta3", "1.1") 
+{
+	byte exchangeHelipad : 0x34F578;
+	byte exchangeTimer : 0x34B8EC;
+}
 state("gta3", "steam") {}
 
 init
@@ -15,6 +19,7 @@ init
 	vars.doReset = false;
 	vars.doSplit = false;
 	vars.offset = 0;
+	vars.exchangeTimerOld = 0;
 	
 	// Read category from split file
 	vars.category = timer.Run.CategoryName.ToLower();
@@ -275,6 +280,15 @@ update
 		}
 		
 		else {vars.checkCurrentMission = true;}
+	}
+	// Final split for any%
+	// That timer variable is used in different missions so we're making sure that we're on The Exchange
+	// by also checking for variable that is set in the very last part of the mission
+	// Timer variable is changed exactly as the final cutscene starts
+	if (vars.category.Contains("any") || vars.category.Contains("beat the game"))
+	{
+		if (current.exchangeHelipad == 1 && current.exchangeTimer != vars.exchangeTimerOld) {vars.doSplit = true;}
+		vars.exchangeTimerOld = current.exchangeTimer;
 	}
 }
 
