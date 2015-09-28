@@ -8,7 +8,10 @@ state("gta-vc")
 state("gta-vc", "1.0") {}
 state("gta-vc", "1.1") {}
 state("gta-vc", "steam") {}
-state("gta-vc", "jp") {}
+state("gta-vc", "jp") 
+{
+	float percentage : 0x41E420;  // It's declared here because float is too op for MemoryWatcher
+}
 
 init
 {
@@ -148,6 +151,18 @@ init
 			vars.missionAddresses.Add(0x4216A8);  // Shakedown
 		}
 		
+		///////////////////////////// 1 0 0 % /////////////////////////////
+		else if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
+		{
+			// You can add addresses for missions you want to split on
+			// MAKE SURE THEY ARE IN RIGHT ORDER, IT'S VERY IMPORTANT
+			// Autosplitter will automatically split when you reach 100%, but nothing bad will happen
+			// when you finish a run with a mission that's in this list.
+			// Here are some miscellaneous addresses to get you started:
+			// TODO: add misc addresses
+			//vars.missionAddresses.Add(0x421600);  // The Party (used later in example)
+		}
+		
 		///////////////////// C O L L E C T A B L E S /////////////////////
 		else if (vars.category.Contains("package") || vars.category.Contains("rob") || vars.category.Contains("stunt") ||
 			vars.category.Contains("jump") || vars.category.Contains("rampage")) {}
@@ -210,6 +225,23 @@ init
 		vars.kyfc1 = new MemoryWatcher<byte>(new DeepPointer(0x426104+vars.offset));
 		vars.kyfc2 = new MemoryWatcher<int>(new DeepPointer(0x425DAC+vars.offset));
 		vars.kyfc3 = new MemoryWatcher<int>(new DeepPointer(0x426100+vars.offset));
+	}
+	
+	// Second part of 100% run stuff
+	else if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
+	{
+		//vars.currentPercentage = new MemoryWatcher<float>(new DeepPointer(0x421418+vars.offset));  // It's retarded
+		vars.hundoShouldSplit = false;
+		if (vars.missionAddressesCurrent.Count != 0)
+		{
+			vars.hundoCompletedMission = vars.missionAddressesCurrent[0]; // Used to store buffered mission
+		}
+		else
+		{
+			vars.hundoCompletedMission = 0x0;
+		}
+		vars.hundoMissionDone = false; // Used to check if buffered mission is done
+		vars.hundoPackage = new MemoryWatcher<int>(new DeepPointer(0x4226E8+vars.offset));
 	}
 	
 	// Init section for collectable runs. [nice conditions]
@@ -316,9 +348,11 @@ update
 		
 		if (vars.checkCurrentMission && vars.currentMissionWatcher.Old == 0 && vars.currentMissionWatcher.Current == 1)
 		{
+			if (vars.category.Contains("100%") || vars.category.Contains("hundo")) { vars.hundoCompletedMission = vars.missionAddressesCurrent[0]; }
 			vars.missionAddressesCurrent.RemoveAt(0);
 			if (vars.missionAddressesCurrent.Count != 0) {vars.currentMissionWatcher = new MemoryWatcher<byte>(new DeepPointer(vars.missionAddressesCurrent[0]+vars.offset));}
-			vars.doSplit = true;
+			if (vars.category.Contains("100%") || vars.category.Contains("hundo")) { vars.hundoMissionDone = true; }
+			else { vars.doSplit = true; }
 			vars.checkCurrentMission = false;
 		}
 		
@@ -348,6 +382,49 @@ update
 	{
 		if (vars.kyfc1.Current == 245 && vars.kyfc2.Current > vars.kyfc3.Current) {vars.doSplit = true;}
 	}
+	// 100%
+	// For now it only splits when ingame percentage reaches 100%
+	// It's possible to add optional checks for splits for all kinds of fancy crap in the game
+	if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
+	{
+		vars.hundoPackage.Update(game);
+		
+		if (current.percentage >= 100.00) { vars.hundoShouldSplit = true; }
+		
+		// Commented example below shows how to make custom split points that check for whatever you want
+		// In this example autosplitter splits after The Party is done and 2 packages are collected by player.
+		// You can do similar combos for any other missions and collectables.
+		// If you want to split independently of mission, make your checks outside this switch block.
+		// If you need help ping Pitpo on #gta channel on SRL's IRC server.
+		switch ((int)vars.hundoCompletedMission)
+		{
+			case 0:
+				break;
+			//case (int)0x421600:
+			//{
+			//	if (vars.hundoMissionDone == true && vars.hundoPackage.Current >= 2)
+			//	{
+			//		vars.hundoShouldSplit = true;
+			//		vars.hundoMissionDone = false;
+			//	}
+			//	break;
+			//}
+			default:
+			{
+				if (vars.hundoMissionDone == true)
+				{
+					vars.hundoShouldSplit = true;
+					vars.hundoMissionDone = false;
+				}
+				break;
+			}
+		
+		if (vars.hundoShouldSplit == true) 
+		{ 
+			vars.doSplit = true;
+			vars.hundoShouldSplit = false;
+		}
+	}
 }
 
 start
@@ -367,6 +444,7 @@ start
 		{
 			vars.collectableIndex = 0;
 		}
+		else if (vars.category.Contains("100%") || vars.category.Contains("hundo")) { vars.hundoCompletedMission = vars.missionAddressesCurrent[0]; }
 	}
 	
 	return vars.doStart;
