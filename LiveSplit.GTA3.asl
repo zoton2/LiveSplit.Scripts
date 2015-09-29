@@ -346,7 +346,7 @@ update
 			vars.percentageOld = current.percentage/1.54;
 		}
 		
-		// NG+ 100% section for Gael
+		// NG+ 100% section for Gael. After reaching first taxi dupe, it splits for every percentage change.
 		if (vars.category.Contains("NG+"))
 		{
 			vars.taxiWatcher.Update(game);
