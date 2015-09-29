@@ -336,9 +336,7 @@ update
 	// For now it only splits when ingame percentage reaches 100%
 	// It's possible to add optional checks for splits for all kinds of fancy crap in the game
 	if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
-	{
-		vars.hundoPackage.Update(game);
-		
+	{		
 		// Divide by 1.54 because there are 154 places in script that "add" percentage. Well coded Rockstar, well coded.
 		if ((current.percentage/1.54) >= 100.0 && (current.percentage/1.54) != vars.percentageOld) 
 		{
@@ -347,7 +345,7 @@ update
 		}
 		
 		// NG+ 100% section for Gael. After reaching first taxi dupe, it splits for every percentage change.
-		if (vars.category.Contains("NG+"))
+		if (vars.category.Contains("ng"))
 		{
 			vars.taxiWatcher.Update(game);
 			if (vars.taxiWatcher.Current == 1)
@@ -373,6 +371,7 @@ update
 					vars.hundoMissionDone = false;
 				}
 				break;
+		}
 		
 		if (vars.hundoShouldSplit == true) 
 		{ 
