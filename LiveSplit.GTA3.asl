@@ -9,16 +9,19 @@ state("gta3", "1.0")
 {
 	byte exchangeHelipad : 0x34F578;
 	byte exchangeTimer : 0x34B8EC;
+	byte percentage : 0x4F6224; // This may be wrong, but nobody plays 1.0 anyway, so this shouldn't be a problem
 }
 state("gta3", "1.1") 
 {
 	byte exchangeHelipad : 0x34F578;
 	byte exchangeTimer : 0x34B8EC;
+	byte percentage : 0x4F63DC;
 }
 state("gta3", "steam") 
 {
 	byte exchangeHelipad : 0x35F6B8;
 	byte exchangeTimer : 0x35BA2C;
+	byte percentage : 0x50651C;
 }
 
 init
@@ -192,6 +195,17 @@ init
 			vars.missionAddresses.Add(0x35B8E0);  // Kingdom Come
 		}
 		
+		///////////////////////////// 1 0 0 % /////////////////////////////
+		else if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
+		{
+			// You can add addresses for missions you want to split on
+			// MAKE SURE THEY ARE IN RIGHT ORDER, IT'S VERY IMPORTANT
+			// Autosplitter will automatically split when you reach 100%, but nothing bad will happen
+			// when you finish a run with a mission that's in this list.
+			// Here are some miscellaneous addresses to get you started:
+			// TODO: add misc addresses
+		}
+		
 		///////////////////////////////////////////////////////////////////
 		else 
 		{
@@ -246,6 +260,23 @@ init
 	
 	// Used to know what state the game is currently in.
 	vars.gameState = new MemoryWatcher<int>(new DeepPointer(0x505A2C+vars.offset));
+	
+	// Second part of 100% run stuff
+	if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
+	{
+		vars.hundoShouldSplit = false;
+		if (vars.missionAddressesCurrent.Count != 0)
+		{
+			vars.hundoCompletedMission = vars.missionAddressesCurrent[0]; // Used to store buffered mission
+		}
+		else
+		{
+			vars.hundoCompletedMission = 0x0;
+		}
+		vars.hundoMissionDone = false; // Used to check if buffered mission is done
+		vars.percentageOld = 0.0;
+		vars.taxiWatcher = new MemoryWatcher<int>(new DeepPointer(0x35B9C4+vars.offset));
+	}
 }
 
 update
@@ -282,9 +313,11 @@ update
 		
 		if (vars.checkCurrentMission && vars.currentMissionWatcher.Old == 0 && vars.currentMissionWatcher.Current == 1)
 		{
+			if (vars.category.Contains("100%") || vars.category.Contains("hundo")) { vars.hundoCompletedMission = vars.missionAddressesCurrent[0]; }
 			vars.missionAddressesCurrent.RemoveAt(0);
 			if (vars.missionAddressesCurrent.Count != 0) {vars.currentMissionWatcher = new MemoryWatcher<byte>(new DeepPointer(vars.missionAddressesCurrent[0]+vars.offset));}
-			vars.doSplit = true;
+			if (vars.category.Contains("100%") || vars.category.Contains("hundo")) { vars.hundoMissionDone = true; }
+			else { vars.doSplit = true; }
 			vars.checkCurrentMission = false;
 		}
 		
@@ -299,6 +332,54 @@ update
 		if (current.exchangeHelipad == 1 && current.exchangeTimer != vars.exchangeTimerOld) {vars.doSplit = true;}
 		vars.exchangeTimerOld = current.exchangeTimer;
 	}
+	// 100%
+	// For now it only splits when ingame percentage reaches 100%
+	// It's possible to add optional checks for splits for all kinds of fancy crap in the game
+	if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
+	{
+		vars.hundoPackage.Update(game);
+		
+		// Divide by 1.54 because there are 154 places in script that "add" percentage. Well coded Rockstar, well coded.
+		if ((current.percentage/1.54) >= 100.0 && (current.percentage/1.54) != vars.percentageOld) 
+		{
+			vars.hundoShouldSplit = true;
+			vars.percentageOld = current.percentage/1.54;
+		}
+		
+		// NG+ 100% section for Gael
+		if (vars.category.Contains("NG+"))
+		{
+			vars.taxiWatcher.Update(game);
+			if (vars.taxiWatcher.Current == 1)
+			{
+				if ((current.percentage/1.54) > vars.percentageOld)
+				{
+					vars.hundoShouldSplit = true;
+					vars.percentageOld = current.percentage/1.54;
+				}
+			}
+		}
+		
+		// If you want to split independently of mission, make your checks outside this switch block.
+		// If you need help ping Pitpo on #gta channel on SRL's IRC server.
+		switch ((int)vars.hundoCompletedMission)
+		{
+			case 0:
+				break;
+			default:
+				if (vars.hundoMissionDone == true)
+				{
+					vars.hundoShouldSplit = true;
+					vars.hundoMissionDone = false;
+				}
+				break;
+		
+		if (vars.hundoShouldSplit == true) 
+		{ 
+			vars.doSplit = true;
+			vars.hundoShouldSplit = false;
+		}
+	}
 }
 
 start
@@ -311,6 +392,11 @@ start
 		if (vars.missionAddressesCurrent.Count != 0) {
 			vars.currentMissionWatcher = new MemoryWatcher<byte>(new DeepPointer(vars.missionAddressesCurrent[0]+vars.offset));
 			vars.checkCurrentMission = false;
+		}
+		if (vars.category.Contains("100%") || vars.category.Contains("hundo"))
+		{
+			vars.percentageOld = 0.0;
+			vars.hundoCompletedMission = vars.missionAddressesCurrent[0];
 		}
 	}
 	
