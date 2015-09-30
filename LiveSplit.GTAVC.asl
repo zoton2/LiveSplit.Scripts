@@ -482,7 +482,7 @@ start
 		else if (vars.category.Contains("100%") || vars.category.Contains("hundo"))
 		{
 			vars.percentageOld = 0.0;
-			vars.hundoCompletedMission = vars.missionAddressesCurrent[0];
+			if (vars.missionAddressesCurrent.Count != 0) {vars.hundoCompletedMission = vars.missionAddressesCurrent[0];}
 		}
 	}
 	
