@@ -414,7 +414,7 @@ update
 		}
 		
 		// NG+ 100% section for Gael. After reaching first taxi dupe, it splits for every percentage change.
-		if (vars.category.Contains("ng"))
+		if (vars.category.Contains("ingame") || vars.category.Contains("in-game"))
 		{
 			//vars.taxiWatcher.Update(game);
 			//if (vars.taxiWatcher.Current == 1)
