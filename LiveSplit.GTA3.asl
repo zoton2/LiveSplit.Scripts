@@ -265,7 +265,26 @@ init
 	// Used to know what state the game is currently in.
 	vars.gameState = new MemoryWatcher<int>(new DeepPointer(0x505A2C+vars.offset));
 	
-	// Init section for collectable runs. [nice conditions]
+	// Init section for 100%
+	if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
+	{
+		vars.hundoShouldSplit = false;
+		vars.hundoMissionDone = false; // Used to check if buffered mission is done
+		vars.percentageOld = 0.0;
+		if (vars.missionAddressesCurrent.Count != 0)
+		{
+			vars.hundoCompletedMission = vars.missionAddressesCurrent[0]; // Used to store buffered mission
+		}
+		else
+		{
+			vars.hundoCompletedMission = 0x0;
+		}
+		
+		// Watchers
+		vars.taxiWatcher = new MemoryWatcher<byte>(new DeepPointer(0x35B9C4+vars.offset));
+	}
+	
+	// Init section for collectable runs.
 	// For "simplicity" reasons, mixed runs (for example: packages + stunts) are not supported.
 	// Nobody does it anyway, but in case someone attempts it, the first category will override any other.
 	// Interesting thing is "mission type" and "collectable type" run mix will actually work.
@@ -306,23 +325,6 @@ init
 			// By default it splits on 20 rampages (max value)
 			vars.collectableSplitOn = new int[] { 20 };
 		}
-	}
-	
-	// Second part of 100% run stuff
-	if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
-	{
-		vars.hundoShouldSplit = false;
-		if (vars.missionAddressesCurrent.Count != 0)
-		{
-			vars.hundoCompletedMission = vars.missionAddressesCurrent[0]; // Used to store buffered mission
-		}
-		else
-		{
-			vars.hundoCompletedMission = 0x0;
-		}
-		vars.hundoMissionDone = false; // Used to check if buffered mission is done
-		vars.percentageOld = 0.0;
-		vars.taxiWatcher = new MemoryWatcher<int>(new DeepPointer(0x35B9C4+vars.offset));
 	}
 }
 
@@ -370,6 +372,7 @@ update
 		
 		else {vars.checkCurrentMission = true;}
 	}
+	
 	// Final split for any%
 	// That timer variable is used in different missions so we're making sure that we're on The Exchange
 	// by also checking for variable that is set in the very last part of the mission.
@@ -379,6 +382,7 @@ update
 		if (current.exchangeHelipad == 1 && current.exchangeTimer != vars.exchangeTimerOld) {vars.doSplit = true;}
 		vars.exchangeTimerOld = current.exchangeTimer;
 	}
+	
 	// Collectables
 	else if (vars.category.Contains("package") || vars.category.Contains("stunt") ||
 			vars.category.Contains("jump") || vars.category.Contains("rampage"))
@@ -396,8 +400,9 @@ update
 			}
 		}
 	}
+	
 	// 100%
-	// For now it only splits when ingame percentage reaches 100%
+	// By default it only splits on missions from 100% section of missionAddresses list and when ingame percentage reaches 100%
 	// It's possible to add optional checks for splits for all kinds of fancy crap in the game
 	if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
 	{		
@@ -424,6 +429,7 @@ update
 		
 		// If you want to split independently of mission, make your checks outside this switch block.
 		// If you need help ping Pitpo on #gta channel on SRL's IRC server.
+		// You can find two examples of using this switch in Vice City autosplitter
 		switch ((int)vars.hundoCompletedMission)
 		{
 			case 0:
@@ -461,7 +467,7 @@ start
 		{
 			vars.collectableIndex = 0;
 		}
-		if (vars.category.Contains("100%") || vars.category.Contains("hundo"))
+		else if (vars.category.Contains("100%") || vars.category.Contains("hundo"))
 		{
 			vars.percentageOld = 0.0;
 			vars.hundoCompletedMission = vars.missionAddressesCurrent[0];
