@@ -259,6 +259,7 @@ init
 		vars.hundoRobberies = new MemoryWatcher<int>(new DeepPointer(0x422A6C+vars.offset));
 		vars.hundoStunts = new MemoryWatcher<int>(new DeepPointer(0x421EDC+vars.offset));
 		
+		vars.KYFCDone = new MemoryWatcher<int>(new DeepPointer(0x4216B8+vars.offset));
 		//vars.paramedicOnMission = new MemoryWatcher<byte>(new DeepPointer(0x421778+vars.offset));
 	}
 	
@@ -411,9 +412,10 @@ update
 		vars.hundoRampages.Update(game);
 		vars.hundoRobberies.Update(game);
 		vars.hundoStunts.Update(game);
+		vars.KYFCDone.Update(game);
 		//vars.paramedicOnMission.Update(game);
 		
-		if (current.percentage >= 100.00 && current.percentage != vars.percentageOld)
+		if (current.percentage >= 100.00 && current.percentage != vars.percentageOld && vars.KYFCDone.Current == 1)
 		{
 			vars.hundoShouldSplit = true;
 			vars.percentageOld = current.percentage;
