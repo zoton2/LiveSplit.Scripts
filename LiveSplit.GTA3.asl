@@ -416,15 +416,15 @@ update
 		// NG+ 100% section for Gael. After reaching first taxi dupe, it splits for every percentage change.
 		if (vars.category.Contains("ng"))
 		{
-			vars.taxiWatcher.Update(game);
-			if (vars.taxiWatcher.Current == 1)
-			{
+			//vars.taxiWatcher.Update(game);
+			//if (vars.taxiWatcher.Current == 1)
+			//{
 				if ((current.percentage/1.54) > vars.percentageOld && (current.percentage/1.54) < 100.0)
 				{
 					vars.hundoShouldSplit = true;
 					vars.percentageOld = current.percentage/1.54;
 				}
-			}
+			//}
 		}
 		
 		// If you want to split independently of mission, make your checks outside this switch block.
