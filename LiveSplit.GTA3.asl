@@ -419,7 +419,7 @@ update
 			vars.taxiWatcher.Update(game);
 			if (vars.taxiWatcher.Current == 1)
 			{
-				if ((current.percentage/1.54) > vars.percentageOld)
+				if ((current.percentage/1.54) > vars.percentageOld && (current.percentage/1.54) < 100.0)
 				{
 					vars.hundoShouldSplit = true;
 					vars.percentageOld = current.percentage/1.54;
