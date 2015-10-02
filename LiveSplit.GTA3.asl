@@ -9,19 +9,19 @@ state("gta3", "1.0")
 {
 	byte exchangeHelipad : 0x34F578;
 	byte exchangeTimer : 0x34B8EC;
-	byte percentage : 0x4F6224; // This may be wrong, but nobody plays 1.0 anyway, so this shouldn't be a problem
+	byte progressMade : 0x4F6224; // This may be wrong, but nobody plays 1.0 anyway, so this shouldn't be a problem
 }
 state("gta3", "1.1") 
 {
 	byte exchangeHelipad : 0x34F578;
 	byte exchangeTimer : 0x34B8EC;
-	byte percentage : 0x4F63DC;
+	byte progressMade : 0x4F63DC;
 }
 state("gta3", "steam") 
 {
 	byte exchangeHelipad : 0x35F6B8;
 	byte exchangeTimer : 0x35BA2C;
-	byte percentage : 0x50651C;
+	byte progressMade : 0x50651C;
 }
 
 init
@@ -270,7 +270,8 @@ init
 	{
 		vars.hundoShouldSplit = false;
 		vars.hundoMissionDone = false; // Used to check if buffered mission is done
-		vars.percentageOld = 0.0;
+		vars.progressOld = 0;
+		vars.progressReal = 0;
 		if (vars.missionAddressesCurrent.Count != 0)
 		{
 			vars.hundoCompletedMission = vars.missionAddressesCurrent[0]; // Used to store buffered mission
@@ -282,6 +283,7 @@ init
 		
 		// Watchers
 		vars.taxiWatcher = new MemoryWatcher<byte>(new DeepPointer(0x35B9C4+vars.offset));
+		vars.craneExportsDone = new MemoryWatcher<byte>(new DeepPointer(0x35C3B4+vars.offset));
 	}
 	
 	// Init section for collectable runs.
@@ -405,24 +407,40 @@ update
 	// By default it only splits on missions from 100% section of missionAddresses list and when ingame percentage reaches 100%
 	// It's possible to add optional checks for splits for all kinds of fancy crap in the game
 	if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
-	{		
-		// Divide by 1.54 because there are 154 places in script that "add" percentage. Well coded Rockstar, well coded.
-		if ((current.percentage/1.54) >= 100.0 && (current.percentage/1.54) != vars.percentageOld) 
+	{
+		// Keep watchers updated
+		vars.craneExportsDone.Update(game);
+		
+		if (current.progressMade > vars.progressOld)
 		{
-			vars.hundoShouldSplit = true;
-			vars.percentageOld = current.percentage/1.54;
+			// Every duped mission instance is (thankfully) awarding player at the exact same frame, so there's no need for complex duping checks.
+			// Emergency vehicles (crane) exports reward player with percentage after all cars are delivered.
+			if (vars.craneExportsDone.Old == 0 && vars.craneExportsDone.Current == 1)
+			{
+				vars.progressReal = vars.progressReal + 7;
+			}
+			else
+			{
+				vars.progressReal++;
+			}
+			vars.progressOld = current.progressMade;
 		}
 		
-		// NG+ 100% section for Gael. After reaching first taxi dupe, it splits for every percentage change.
+		if (vars.progressReal == 154 && (!vars.category.Contains("ingame") || !vars.category.Contains("in-game"))
+		{
+			vars.hundoShouldSplit = true;
+		}
+		
+		// NG+ 100% section for Gael. It splits for every percentage change.
 		if (vars.category.Contains("ingame") || vars.category.Contains("in-game"))
 		{
 			//vars.taxiWatcher.Update(game);
 			//if (vars.taxiWatcher.Current == 1)
 			//{
-				if ((current.percentage/1.54) > vars.percentageOld && (current.percentage/1.54) < 100.0)
+				if ((current.progressMade) > vars.progressOld)
 				{
 					vars.hundoShouldSplit = true;
-					vars.percentageOld = current.percentage/1.54;
+					vars.progressOld = current.progressMade;
 				}
 			//}
 		}
@@ -469,7 +487,8 @@ start
 		}
 		else if (vars.category.Contains("100%") || vars.category.Contains("hundo"))
 		{
-			vars.percentageOld = 0.0;
+			vars.progressOld = 0;
+			vars.progressReal = 0;
 			if (vars.missionAddressesCurrent.Count != 0) {vars.hundoCompletedMission = vars.missionAddressesCurrent[0];}
 		}
 	}

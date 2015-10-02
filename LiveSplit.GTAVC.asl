@@ -240,10 +240,10 @@ init
 	// Init section for 100%
 	else if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
 	{
-		//vars.currentPercentage = new MemoryWatcher<float>(new DeepPointer(0x421418+vars.offset));  // It's retarded
 		vars.hundoShouldSplit = false;
 		vars.hundoMissionDone = false; // Used to check if buffered mission is done
 		vars.percentageOld = 0.0;
+		vars.progressMade = 0;
 		if (vars.missionAddressesCurrent.Count != 0)
 		{
 			vars.hundoCompletedMission = vars.missionAddressesCurrent[0]; // Used to store buffered mission
@@ -259,7 +259,7 @@ init
 		vars.hundoRobberies = new MemoryWatcher<int>(new DeepPointer(0x422A6C+vars.offset));
 		vars.hundoStunts = new MemoryWatcher<int>(new DeepPointer(0x421EDC+vars.offset));
 		
-		vars.KYFCDone = new MemoryWatcher<int>(new DeepPointer(0x4216B8+vars.offset));
+		vars.AutocideDone = new MemoryWatcher<int>(new DeepPointer(0x421730+vars.offset));
 		//vars.paramedicOnMission = new MemoryWatcher<byte>(new DeepPointer(0x421778+vars.offset));
 	}
 	
@@ -412,13 +412,31 @@ update
 		vars.hundoRampages.Update(game);
 		vars.hundoRobberies.Update(game);
 		vars.hundoStunts.Update(game);
-		vars.KYFCDone.Update(game);
+		vars.AutocideDone.Update(game);
 		//vars.paramedicOnMission.Update(game);
 		
-		if (current.percentage >= 100.00 && current.percentage != vars.percentageOld && vars.KYFCDone.Current == 1)
+		if (current.percentage > vars.percentageOld)
+		{
+			// There is no reason to instapass Cherry Poppers more than once and there is no clear way to check
+			// if player is on a Distribution mission, so there are no checks for that.
+			// Instapassing Cherry Poppers more than once will cause premature final split, but nobody do that anyway, so this should be fine.
+			// Every duped mission instance is (thankfully) awarding player at the exact same frame, so there's no need for complex duping checks.
+			// Autocide increments percentage twice, because reasons, so we're doing the same here.
+			if (vars.AutocideDone.Old == 0 && vars.AutocideDone.Current == 1) 
+			{
+				vars.progressMade = vars.progressMade + 2;
+			}
+			else
+			{
+				vars.progressMade++;
+			}
+			vars.percentageOld = current.percentage;
+		}
+		
+		// This should always be mark a true 100% completion so there is no need to make a "do once" check
+		if (vars.progressMade == 154)
 		{
 			vars.hundoShouldSplit = true;
-			vars.percentageOld = current.percentage;
 		}
 		
 		// Commented examples below show how to make custom split points that check for whatever you want
@@ -481,6 +499,7 @@ start
 		}
 		else if (vars.category.Contains("100%") || vars.category.Contains("hundo"))
 		{
+			vars.progressMade = 0;
 			vars.percentageOld = 0.0;
 			if (vars.missionAddressesCurrent.Count != 0) {vars.hundoCompletedMission = vars.missionAddressesCurrent[0];}
 		}
