@@ -9,16 +9,19 @@ state("gta3", "1.0")
 {
 	byte exchangeHelipad : 0x34F578;
 	byte exchangeTimer : 0x34B8EC;
+	byte progressMade : 0x4F6224; // This may be wrong, but nobody plays 1.0 anyway, so this shouldn't be a problem
 }
 state("gta3", "1.1") 
 {
 	byte exchangeHelipad : 0x34F578;
 	byte exchangeTimer : 0x34B8EC;
+	byte progressMade : 0x4F63DC;
 }
 state("gta3", "steam") 
 {
 	byte exchangeHelipad : 0x35F6B8;
 	byte exchangeTimer : 0x35BA2C;
+	byte progressMade : 0x50651C;
 }
 
 init
@@ -192,6 +195,21 @@ init
 			vars.missionAddresses.Add(0x35B8E0);  // Kingdom Come
 		}
 		
+		///////////////////////////// 1 0 0 % /////////////////////////////
+		else if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
+		{
+			// You can add addresses for missions you want to split on
+			// MAKE SURE THEY ARE IN RIGHT ORDER, IT'S VERY IMPORTANT
+			// Autosplitter will automatically split when you reach 100%, but nothing bad will happen
+			// when you finish a run with a mission that's in this list.
+			// Here are some miscellaneous addresses to get you started:
+			// TODO: add misc addresses
+		}
+		
+		///////////////////// C O L L E C T A B L E S /////////////////////
+		else if (vars.category.Contains("package") || vars.category.Contains("stunt") ||
+			vars.category.Contains("jump") || vars.category.Contains("rampage")) {}
+		
 		///////////////////////////////////////////////////////////////////
 		else 
 		{
@@ -246,6 +264,70 @@ init
 	
 	// Used to know what state the game is currently in.
 	vars.gameState = new MemoryWatcher<int>(new DeepPointer(0x505A2C+vars.offset));
+	
+	// Init section for 100%
+	if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
+	{
+		vars.hundoShouldSplit = false;
+		vars.hundoMissionDone = false; // Used to check if buffered mission is done
+		vars.progressOld = 0;
+		vars.progressReal = 0;
+		if (vars.missionAddressesCurrent.Count != 0)
+		{
+			vars.hundoCompletedMission = vars.missionAddressesCurrent[0]; // Used to store buffered mission
+		}
+		else
+		{
+			vars.hundoCompletedMission = 0x0;
+		}
+		
+		// Watchers
+		vars.taxiWatcher = new MemoryWatcher<byte>(new DeepPointer(0x35B9C4+vars.offset));
+		vars.craneExportsDone = new MemoryWatcher<byte>(new DeepPointer(0x35C3B4+vars.offset));
+	}
+	
+	// Init section for collectable runs.
+	// For "simplicity" reasons, mixed runs (for example: packages + stunts) are not supported.
+	// Nobody does it anyway, but in case someone attempts it, the first category will override any other.
+	// Interesting thing is "mission type" and "collectable type" run mix will actually work.
+	else if (vars.category.Contains("package") || vars.category.Contains("stunt") ||
+			vars.category.Contains("jump") || vars.category.Contains("rampage"))
+	{
+		vars.collectableIndex = 0;
+		
+		// You can specify when autosplitter splits by adding values (separated by commas)
+		// IN ASCENDING ORDER to vars.collectableSplitOn arrays.
+		
+		////////////// 1 0 0   H I D D E N   P A C K A G E S //////////////
+		if (vars.category.Contains("package"))
+		{
+			// Set up memory watcher for collected packages counter
+			vars.collectable = new MemoryWatcher<int>(new DeepPointer(0x35C3D4+vars.offset));
+			
+			// By default it splits on 100 packages (max value)
+			vars.collectableSplitOn = new int[] { 100 };
+		}
+		
+		/////////// A L L   U N I Q U E   S T U N T   J U M P S ///////////
+		else if (vars.category.Contains("stunt") || vars.category.Contains("jump"))
+		{
+			// Set up memory watcher for completed USJs counter
+			vars.collectable = new MemoryWatcher<int>(new DeepPointer(0x35BFB0+vars.offset));
+			
+			// By default it splits on 20 USJs (max value)
+			vars.collectableSplitOn = new int[] { 20 };
+		}
+		
+		///////////////////// A L L   R A M P A G E S /////////////////////
+		else if (vars.category.Contains("rampage"))
+		{
+			// Set up memory watcher for completed rampages counter
+			vars.collectable = new MemoryWatcher<int>(new DeepPointer(0x35C0AC+vars.offset));
+			
+			// By default it splits on 20 rampages (max value)
+			vars.collectableSplitOn = new int[] { 20 };
+		}
+	}
 }
 
 update
@@ -282,14 +364,17 @@ update
 		
 		if (vars.checkCurrentMission && vars.currentMissionWatcher.Old == 0 && vars.currentMissionWatcher.Current == 1)
 		{
+			if (vars.category.Contains("100%") || vars.category.Contains("hundo")) { vars.hundoCompletedMission = vars.missionAddressesCurrent[0]; }
 			vars.missionAddressesCurrent.RemoveAt(0);
 			if (vars.missionAddressesCurrent.Count != 0) {vars.currentMissionWatcher = new MemoryWatcher<byte>(new DeepPointer(vars.missionAddressesCurrent[0]+vars.offset));}
-			vars.doSplit = true;
+			if (vars.category.Contains("100%") || vars.category.Contains("hundo")) { vars.hundoMissionDone = true; }
+			else { vars.doSplit = true; }
 			vars.checkCurrentMission = false;
 		}
 		
 		else {vars.checkCurrentMission = true;}
 	}
+	
 	// Final split for any%
 	// That timer variable is used in different missions so we're making sure that we're on The Exchange
 	// by also checking for variable that is set in the very last part of the mission.
@@ -298,6 +383,89 @@ update
 	{
 		if (current.exchangeHelipad == 1 && current.exchangeTimer != vars.exchangeTimerOld) {vars.doSplit = true;}
 		vars.exchangeTimerOld = current.exchangeTimer;
+	}
+	
+	// Collectables
+	else if (vars.category.Contains("package") || vars.category.Contains("stunt") ||
+			vars.category.Contains("jump") || vars.category.Contains("rampage"))
+	{
+		vars.collectable.Update(game);
+		
+		// Split when number of required collectables for next split equals the one ingame.
+		if (vars.collectable.Old < vars.collectableSplitOn[vars.collectableIndex] && vars.collectable.Current == vars.collectableSplitOn[vars.collectableIndex])
+		{
+			vars.doSplit = true;
+			
+			if (vars.collectableIndex < vars.collectableSplitOn.Length-1)
+			{
+				vars.collectableIndex++;
+			}
+		}
+	}
+	
+	// 100%
+	// By default it only splits on missions from 100% section of missionAddresses list and when ingame percentage reaches 100%
+	// It's possible to add optional checks for splits for all kinds of fancy crap in the game
+	if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
+	{
+		// Keep watchers updated
+		vars.craneExportsDone.Update(game);
+		
+		if (current.progressMade > vars.progressOld)
+		{
+			// Every duped mission instance is (thankfully) awarding player at the exact same frame, so there's no need for complex duping checks.
+			// Emergency vehicles (crane) exports reward player with percentage after all cars are delivered.
+			if (vars.craneExportsDone.Old == 0 && vars.craneExportsDone.Current == 1)
+			{
+				vars.progressReal = vars.progressReal + 7;
+			}
+			else
+			{
+				vars.progressReal++;
+			}
+			vars.progressOld = current.progressMade;
+		}
+		
+		if (vars.progressReal == 154 && (!vars.category.Contains("ingame") || !vars.category.Contains("in-game"))
+		{
+			vars.hundoShouldSplit = true;
+		}
+		
+		// NG+ 100% section for Gael. It splits for every percentage change.
+		if (vars.category.Contains("ingame") || vars.category.Contains("in-game"))
+		{
+			//vars.taxiWatcher.Update(game);
+			//if (vars.taxiWatcher.Current == 1)
+			//{
+				if ((current.progressMade) > vars.progressOld)
+				{
+					vars.hundoShouldSplit = true;
+					vars.progressOld = current.progressMade;
+				}
+			//}
+		}
+		
+		// If you want to split independently of mission, make your checks outside this switch block.
+		// If you need help ping Pitpo on #gta channel on SRL's IRC server.
+		// You can find two examples of using this switch in Vice City autosplitter
+		switch ((int)vars.hundoCompletedMission)
+		{
+			case 0:
+				break;
+			default:
+				if (vars.hundoMissionDone == true)
+				{
+					vars.hundoShouldSplit = true;
+					vars.hundoMissionDone = false;
+				}
+				break;
+		}
+		
+		if (vars.hundoShouldSplit == true) 
+		{ 
+			vars.doSplit = true;
+			vars.hundoShouldSplit = false;
+		}
 	}
 }
 
@@ -311,6 +479,17 @@ start
 		if (vars.missionAddressesCurrent.Count != 0) {
 			vars.currentMissionWatcher = new MemoryWatcher<byte>(new DeepPointer(vars.missionAddressesCurrent[0]+vars.offset));
 			vars.checkCurrentMission = false;
+		}
+		if (vars.category.Contains("package") || vars.category.Contains("stunt") ||
+			vars.category.Contains("jump") || vars.category.Contains("rampage"))
+		{
+			vars.collectableIndex = 0;
+		}
+		else if (vars.category.Contains("100%") || vars.category.Contains("hundo"))
+		{
+			vars.progressOld = 0;
+			vars.progressReal = 0;
+			if (vars.missionAddressesCurrent.Count != 0) {vars.hundoCompletedMission = vars.missionAddressesCurrent[0];}
 		}
 	}
 	

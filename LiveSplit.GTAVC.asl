@@ -5,10 +5,22 @@ state("gta-vc")
 }
 
 // These need to exist so they are actually found as versions by the code below.
-state("gta-vc", "1.0") {}
-state("gta-vc", "1.1") {}
-state("gta-vc", "steam") {}
-state("gta-vc", "jp") {}
+state("gta-vc", "1.0")
+{
+	float percentage : 0x421418;
+}
+state("gta-vc", "1.1")
+{
+	float percentage : 0x421420;
+}
+state("gta-vc", "steam")
+{
+	float percentage : 0x420420;
+}
+state("gta-vc", "jp") 
+{
+	float percentage : 0x41E420;  // It's declared here because float is too op for MemoryWatcher
+}
 
 init
 {
@@ -148,6 +160,19 @@ init
 			vars.missionAddresses.Add(0x4216A8);  // Shakedown
 		}
 		
+		///////////////////////////// 1 0 0 % /////////////////////////////
+		else if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
+		{
+			// You can add addresses for missions you want to split on
+			// MAKE SURE THEY ARE IN RIGHT ORDER, IT'S VERY IMPORTANT
+			// Autosplitter will automatically split when you reach 100%, but nothing bad will happen
+			// when you finish a run with a mission that's in this list.
+			// Here are some miscellaneous addresses to get you started:
+			// TODO: add misc addresses
+			//vars.missionAddresses.Add(0x421600);  // The Party (used later in example)
+			//vars.missionAddresses.Add(0x421894);  // Pizza Boy (used later in example)
+		}
+		
 		///////////////////// C O L L E C T A B L E S /////////////////////
 		else if (vars.category.Contains("package") || vars.category.Contains("rob") || vars.category.Contains("stunt") ||
 			vars.category.Contains("jump") || vars.category.Contains("rampage")) {}
@@ -210,6 +235,32 @@ init
 		vars.kyfc1 = new MemoryWatcher<byte>(new DeepPointer(0x426104+vars.offset));
 		vars.kyfc2 = new MemoryWatcher<int>(new DeepPointer(0x425DAC+vars.offset));
 		vars.kyfc3 = new MemoryWatcher<int>(new DeepPointer(0x426100+vars.offset));
+	}
+	
+	// Init section for 100%
+	else if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
+	{
+		vars.hundoShouldSplit = false;
+		vars.hundoMissionDone = false; // Used to check if buffered mission is done
+		vars.percentageOld = 0.0;
+		vars.progressMade = 0;
+		if (vars.missionAddressesCurrent.Count != 0)
+		{
+			vars.hundoCompletedMission = vars.missionAddressesCurrent[0]; // Used to store buffered mission
+		}
+		else
+		{
+			vars.hundoCompletedMission = 0x0;
+		}
+		
+		// Watchers
+		vars.hundoPackages = new MemoryWatcher<int>(new DeepPointer(0x4226E8+vars.offset));
+		vars.hundoRampages = new MemoryWatcher<int>(new DeepPointer(0x42286C+vars.offset));
+		vars.hundoRobberies = new MemoryWatcher<int>(new DeepPointer(0x422A6C+vars.offset));
+		vars.hundoStunts = new MemoryWatcher<int>(new DeepPointer(0x421EDC+vars.offset));
+		
+		vars.AutocideDone = new MemoryWatcher<int>(new DeepPointer(0x421730+vars.offset));
+		//vars.paramedicOnMission = new MemoryWatcher<byte>(new DeepPointer(0x421778+vars.offset));
 	}
 	
 	// Init section for collectable runs. [nice conditions]
@@ -316,9 +367,11 @@ update
 		
 		if (vars.checkCurrentMission && vars.currentMissionWatcher.Old == 0 && vars.currentMissionWatcher.Current == 1)
 		{
+			if (vars.category.Contains("100%") || vars.category.Contains("hundo")) { vars.hundoCompletedMission = vars.missionAddressesCurrent[0]; }
 			vars.missionAddressesCurrent.RemoveAt(0);
 			if (vars.missionAddressesCurrent.Count != 0) {vars.currentMissionWatcher = new MemoryWatcher<byte>(new DeepPointer(vars.missionAddressesCurrent[0]+vars.offset));}
-			vars.doSplit = true;
+			if (vars.category.Contains("100%") || vars.category.Contains("hundo")) { vars.hundoMissionDone = true; }
+			else { vars.doSplit = true; }
 			vars.checkCurrentMission = false;
 		}
 		
@@ -348,6 +401,83 @@ update
 	{
 		if (vars.kyfc1.Current == 245 && vars.kyfc2.Current > vars.kyfc3.Current) {vars.doSplit = true;}
 	}
+	
+	// 100%
+	// By default it only splits on missions from 100% section of missionAddresses list and when ingame percentage reaches 100%
+	// It's possible to add optional checks for splits for all kinds of fancy crap in the game
+	if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
+	{
+		// Keep watchers updated
+		vars.hundoPackages.Update(game);
+		vars.hundoRampages.Update(game);
+		vars.hundoRobberies.Update(game);
+		vars.hundoStunts.Update(game);
+		vars.AutocideDone.Update(game);
+		//vars.paramedicOnMission.Update(game);
+		
+		if (current.percentage > vars.percentageOld)
+		{
+			// There is no reason to instapass Cherry Poppers more than once and there is no clear way to check
+			// if player is on a Distribution mission, so there are no checks for that.
+			// Instapassing Cherry Poppers more than once will cause premature final split, but nobody do that anyway, so this should be fine.
+			// Every duped mission instance is (thankfully) awarding player at the exact same frame, so there's no need for complex duping checks.
+			// Autocide increments percentage twice, because reasons, so we're doing the same here.
+			if (vars.AutocideDone.Old == 0 && vars.AutocideDone.Current == 1) 
+			{
+				vars.progressMade = vars.progressMade + 2;
+			}
+			else
+			{
+				vars.progressMade++;
+			}
+			vars.percentageOld = current.percentage;
+		}
+		
+		// This should always be mark a true 100% completion so there is no need to make a "do once" check
+		if (vars.progressMade == 154)
+		{
+			vars.hundoShouldSplit = true;
+		}
+		
+		// Commented examples below show how to make custom split points that check for whatever you want
+		// If you want to split independently of mission, make your checks outside this switch block.
+		// If you need help ping Pitpo on #gta channel on SRL's IRC server.
+		switch ((int)vars.hundoCompletedMission)
+		{
+			case 0:
+				break;
+			// In this example autosplitter splits after The Party is done and 2 packages are collected by player.
+			// You can do similar combos for any other missions and collectables.
+			//case (int)0x421600:
+			//	if (vars.hundoMissionDone == true && vars.hundoPackages.Current >= 2)
+			//	{
+			//		vars.hundoShouldSplit = true;
+			//		vars.hundoMissionDone = false;
+			//	}
+			//	break;
+			// Here we split on Paramedic start after Pizza Boy mission and 4 robberies are done
+			//case (int)0x421894:
+			//	if (vars.hundoMissionDone == true && vars.hundoRobberies.Current >= 4 && vars.paramedicOnMission.Current == 1)
+			//	{
+			//		vars.hundoShouldSplit = true;
+			//		vars.hundoMissionDone = false;
+			//	}
+			//	break;
+			default:
+				if (vars.hundoMissionDone == true)
+				{
+					vars.hundoShouldSplit = true;
+					vars.hundoMissionDone = false;
+				}
+				break;
+		}
+		
+		if (vars.hundoShouldSplit == true) 
+		{ 
+			vars.doSplit = true;
+			vars.hundoShouldSplit = false;
+		}
+	}
 }
 
 start
@@ -366,6 +496,12 @@ start
 			vars.category.Contains("jump") || vars.category.Contains("rampage"))
 		{
 			vars.collectableIndex = 0;
+		}
+		else if (vars.category.Contains("100%") || vars.category.Contains("hundo"))
+		{
+			vars.progressMade = 0;
+			vars.percentageOld = 0.0;
+			if (vars.missionAddressesCurrent.Count != 0) {vars.hundoCompletedMission = vars.missionAddressesCurrent[0];}
 		}
 	}
 	
