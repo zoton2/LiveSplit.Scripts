@@ -204,6 +204,7 @@ init
 			// when you finish a run with a mission that's in this list.
 			// Here are some miscellaneous addresses to get you started:
 			// TODO: add misc addresses
+			//vars.missionAddresses.Add(0x35B778);  // The Fuzz Ball (used later in example)
 		}
 		
 		///////////////////// C O L L E C T A B L E S /////////////////////
@@ -281,9 +282,16 @@ init
 			vars.hundoCompletedMission = 0x0;
 		}
 		
+		//vars.previousStunts = 0;
+		
 		// Watchers
+		vars.hundoPackages = new MemoryWatcher<int>(new DeepPointer(0x35C3D4+vars.offset));
+		vars.hundoRampages = new MemoryWatcher<int>(new DeepPointer(0x35C0AC+vars.offset));
+		vars.hundoStunts = new MemoryWatcher<int>(new DeepPointer(0x35BFB0+vars.offset));
+		
 		vars.taxiWatcher = new MemoryWatcher<byte>(new DeepPointer(0x35B9C4+vars.offset));
 		vars.craneExportsDone = new MemoryWatcher<byte>(new DeepPointer(0x35C3B4+vars.offset));
+		//vars.PAPDone = new MemoryWatcher<byte>(new DeepPointer(0x35B774+vars.offset));
 	}
 	
 	// Init section for collectable runs.
@@ -409,9 +417,13 @@ update
 	if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
 	{
 		// Keep watchers updated
+		vars.hundoPackages.Update(game);
+		vars.hundoRampages.Update(game);
+		vars.hundoStunts.Update(game);
 		vars.craneExportsDone.Update(game);
-		
-		if (current.progressMade > vars.progressOld)
+		//vars.PAPDone.Update(game);
+				
+		if (current.progressMade > vars.progressOld && (!vars.category.Contains("ingame") && !vars.category.Contains("in-game")))
 		{
 			// Every duped mission instance is (thankfully) awarding player at the exact same frame, so there's no need for complex duping checks.
 			// Emergency vehicles (crane) exports reward player with percentage after all cars are delivered.
@@ -426,7 +438,7 @@ update
 			vars.progressOld = current.progressMade;
 		}
 		
-		if (vars.progressReal == 154 && (!vars.category.Contains("ingame") || !vars.category.Contains("in-game"))
+		if (vars.progressReal == 154 && (!vars.category.Contains("ingame") && !vars.category.Contains("in-game")))
 		{
 			vars.hundoShouldSplit = true;
 		}
@@ -437,7 +449,7 @@ update
 			//vars.taxiWatcher.Update(game);
 			//if (vars.taxiWatcher.Current == 1)
 			//{
-				if ((current.progressMade) > vars.progressOld)
+				if (current.progressMade > vars.progressOld)
 				{
 					vars.hundoShouldSplit = true;
 					vars.progressOld = current.progressMade;
@@ -445,13 +457,24 @@ update
 			//}
 		}
 		
+		//if (vars.PAPDone.Old == 0 && vars.PAPDone.Current == 1)
+		//{
+		//	vars.previousStunts = vars.hundoStunts.Current;
+		//}
+		
 		// If you want to split independently of mission, make your checks outside this switch block.
 		// If you need help ping Pitpo on #gta channel on SRL's IRC server.
-		// You can find two examples of using this switch in Vice City autosplitter
+		// You can find two more examples of using this switch in Vice City autosplitter
 		switch ((int)vars.hundoCompletedMission)
 		{
 			case 0:
 				break;
+			//case (int)0x35B778;  // The Fuzz Ball - split after missions and the "infamous stunts" are done (it's possible to set up a watcher for idividual stunts, but i'm to lazy to look for addresses)
+			//	if (vars.hundoMissionDone == true && vars.hundoStunts.Current - vars.previousStunts >= 3)
+			//	{
+			//		vars.hundoShouldSplit = true;
+			//		vars.hundoMissionDone = false;
+			//	}
 			default:
 				if (vars.hundoMissionDone == true)
 				{
