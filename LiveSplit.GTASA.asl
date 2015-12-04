@@ -19,6 +19,7 @@ init
 	vars.doSplit = false;
 	vars.offset = 0;
 	vars.startGameVal = 1;
+	vars.watchers = new MemoryWatcherList();
 	
 	// Read category from split file
 	vars.category = timer.Run.CategoryName.ToLower();
@@ -36,18 +37,34 @@ init
 	//{
 		if (current.versionCheck10US == 38079 || current.versionCheck10EU == 38079)
 		{
+			if (current.versionCheck10US == 38079) {
+				vars.watchers.Add(new MemoryWatcher<int>(new DeepPointer(0x42457C)) { Name = "VersionCheck" });
+			}
+			
+			else {
+				vars.watchers.Add(new MemoryWatcher<int>(new DeepPointer(0x4245BC)) { Name = "VersionCheck" });
+			}
+			
 			version = "1.0";
 			vars.offset = 0;
 		}
 		
 		else if (current.versionCheck101US == 38079 || current.versionCheck101EU == 38079)
 		{
+			if (current.versionCheck101US == 38079) {
+				vars.watchers.Add(new MemoryWatcher<int>(new DeepPointer(0x4252FC)) { Name = "VersionCheck" });
+			}
+			
+			else {
+				vars.watchers.Add(new MemoryWatcher<int>(new DeepPointer(0x42533C)) { Name = "VersionCheck" });
+			}
+			
 			version = "1.01";
 			vars.offset = 0x2680;
 		}
 	//}
 	
-	vars.watchers = new MemoryWatcherList();
+	print(version);
 	
 	if (version == "steam3.0")
 	{
@@ -111,13 +128,23 @@ update
 	var currentRealTime = timer.CurrentTime.RealTime.ToString();
 	var currentRealTimeInSeconds = TimeSpan.Parse(currentRealTime).TotalSeconds;
 	
-	if (vars.watchers["StartGame_A"].Current == vars.startGameVal)
+	if (vars.watchers["StartGame_A"].Current == 0)
+	{
+		print("StartGame_A: " + vars.watchers["StartGame_A"].Current.ToString());
+		print("NewGameDialog_A: " + vars.watchers["NewGameDialog_A"].Current.ToString());
+		print("LoadingGame_A: " + vars.watchers["LoadingGame_A"].Current.ToString());
+		print("IsInMenu_A: " + vars.watchers["IsInMenu_A"].Current.ToString());
+	}
+	
+	
+	
+	if ((vars.watchers["StartGame_A"].Old == 0 && vars.watchers["StartGame_A"].Current == 1 && vars.watchers["LoadingGame_A"].Old == 0 && vars.watchers["IsInMenu_A"].Old == 0) || (vars.watchers["StartGame_A"].Old == 1 && vars.watchers["StartGame_A"].Current == 2))
 	{
 		vars.doStart = true;
 	}
 	
 	// this resets the splits if the game closes
-	else if (vars.watchers["StartGame_A"].Current == 0 && vars.watchers["StartGame_A"].Old > 0)
+	else if (vars.watchers["StartGame_A"].Current == 0 && vars.watchers["StartGame_A"].Old > 0 && vars.watchers["IsInMenu_A"].Current == 0)
 	{
 		if (vars.startGameVal != 2) {vars.startGameVal = 2;}
 		vars.doReset = true;
