@@ -1,5 +1,3 @@
-// Works with the RELOADED cracked EXE.
-
 state("SawGame")
 {
 	int loading : 0x16C5070, 0xB4;
