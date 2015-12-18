@@ -27,11 +27,7 @@ state("gta3", "steam")
 init
 {
 	// Declaring variables.
-	vars.doStart = false;
-	vars.doReset = false;
-	vars.doSplit = false;
 	vars.offset = 0;
-	vars.exchangeTimerOld = 0;
 	
 	// Read category from split file
 	vars.category = timer.Run.CategoryName.ToLower();
@@ -260,6 +256,47 @@ init
 		vars.checkCurrentMission = false;
 	}
 	
+	// Split after you start the next mission
+	// 0 - never
+	// 1 - always
+	// 2 - only on selected missions
+	vars.splitOnMission = 2;
+	
+	vars.missionPassed = false;
+	vars.missionPassedAddress = 0x0; // Used to store buffered mission address (defaults to nothing for safety reasons)
+	
+	if (vars.splitOnMission != 0 || vars.category.Contains("100%") || vars.category.Contains("hundo"))
+	{
+		// There is no onMission variable exclusive to story missions, but there's one for every other oddjob (and "employer"?)
+		vars.onMissionFlag = new MemoryWatcher<int>(new DeepPointer(0x35B6C4+vars.offset));
+		vars.onMissionFlagVigilante = new MemoryWatcher<int>(new DeepPointer(0x35B964+vars.offset));
+		vars.onMissionFlagTaxi = new MemoryWatcher<int>(new DeepPointer(0x35B9BC+vars.offset));
+		vars.onMissionFlagParamedic = new MemoryWatcher<int>(new DeepPointer(0x35B954+vars.offset));
+		vars.onMissionFlagFirefighter = new MemoryWatcher<int>(new DeepPointer(0x35B95C+vars.offset));
+		vars.onMissionFlagRampage = new MemoryWatcher<int>(new DeepPointer(0x35C0A8+vars.offset));
+		vars.onMissionFlagHIcon = new MemoryWatcher<int>(new DeepPointer(0x30AF04+vars.offset));
+		vars.skipSplit = false;
+		
+		if (vars.splitOnMission == 2 && !((IDictionary<String, object>)vars).ContainsKey("OMSplit"))
+		{
+			vars.OMSplit = new List<int>();
+			
+			// If you want to split after picking up next mission only in some cases (splitOnMission = 2), add them to this list
+			if (vars.category.Contains("any") || vars.category.Contains("beat the game"))
+			{
+				vars.OMSplit.Add(0x35B79C);  // Taking Out the Laundry
+				vars.OMSplit.Add(0x35B7A8);  // Triads and Tribulations
+				vars.OMSplit.Add(0x35B878);  // Sayonara Salvatore
+				vars.OMSplit.Add(0x35B898);  // Evidence Dash
+			}
+		}
+		if (vars.splitOnMission == 2)
+		{
+			// Make copy of that list to make it reset friendly
+			vars.OMSplitCurrent = new List<int>(vars.OMSplit);
+		}
+	}
+	
 	// Used to know when the player skips the initial cutscene and starts the run.
 	vars.skipInitialCutsceneCheck = new MemoryWatcher<int>(new DeepPointer(0x35CC50+vars.offset));
 	
@@ -270,17 +307,9 @@ init
 	if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
 	{
 		vars.hundoShouldSplit = false;
-		vars.hundoMissionDone = false; // Used to check if buffered mission is done
 		vars.progressOld = 0;
 		vars.progressReal = 0;
-		if (vars.missionAddressesCurrent.Count != 0)
-		{
-			vars.hundoCompletedMission = vars.missionAddressesCurrent[0]; // Used to store buffered mission
-		}
-		else
-		{
-			vars.hundoCompletedMission = 0x0;
-		}
+		vars.splitOnMissionHundo = false;
 		
 		//vars.previousStunts = 0;
 		
@@ -339,11 +368,7 @@ init
 }
 
 update
-{
-	vars.doStart = false;
-	vars.doReset = false;
-	vars.doSplit = false;
-	
+{	
 	// unknown version, don't do anything
 	if (version == "")
 		return;
@@ -351,18 +376,26 @@ update
 	// Keeping a few extra memory watchers up to date for the current frame.
 	vars.skipInitialCutsceneCheck.Update(game);
 	vars.gameState.Update(game);
-	
-	// Works out the current real time in seconds, so it can be compared to.
-	// going to use ~5 seconds for GTA3 just to be safe for SRL races and such, might need to be higher?
-	var currentRealTime = timer.CurrentTime.RealTime.ToString();
-	var currentRealTimeInSeconds = TimeSpan.Parse(currentRealTime).TotalSeconds;
-	
-	// Starting the splits after the initial cutscene skip.
-	if (vars.skipInitialCutsceneCheck.Old == 0 && vars.skipInitialCutsceneCheck.Current == 3841) {vars.doStart = true;}
-	
-	// Resetting the splits if needed.
-	if (vars.gameState.Old == 9 && vars.gameState.Current == 8 && currentRealTimeInSeconds > 5) {
-		vars.doReset = true;
+	if (vars.splitOnMission != 0 || vars.category.Contains("100%") || vars.category.Contains("hundo")) 
+	{
+		vars.onMissionFlag.Update(game);
+		vars.onMissionFlagFirefighter.Update(game);
+		vars.onMissionFlagHIcon.Update(game);
+		vars.onMissionFlagParamedic.Update(game);
+		vars.onMissionFlagRampage.Update(game);
+		vars.onMissionFlagTaxi.Update(game);
+		vars.onMissionFlagVigilante.Update(game);
+		
+		// There must be other way to do it...
+		if (vars.onMissionFlagFirefighter.Current == 1 && vars.onMissionFlagFirefighter.Old == 0 ||
+			vars.onMissionFlagHIcon.Current == 1 && vars.onMissionFlagHIcon.Old == 0 ||
+			vars.onMissionFlagParamedic.Current == 1 && vars.onMissionFlagParamedic.Old == 0 ||
+			vars.onMissionFlagRampage.Current == 1 && vars.onMissionFlagRampage.Old == 0 ||
+			vars.onMissionFlagTaxi.Current == 1 && vars.onMissionFlagTaxi.Old == 0 ||
+			vars.onMissionFlagVigilante.Current == 1 && vars.onMissionFlagVigilante.Old == 0)
+		{
+			vars.skipSplit = true;
+		} else { vars.skipSplit = false; }
 	}
 	
 	// All missions (besides the final split).
@@ -372,49 +405,27 @@ update
 		
 		if (vars.checkCurrentMission && vars.currentMissionWatcher.Old == 0 && vars.currentMissionWatcher.Current == 1)
 		{
-			if (vars.category.Contains("100%") || vars.category.Contains("hundo")) { vars.hundoCompletedMission = vars.missionAddressesCurrent[0]; }
+			vars.missionPassedAddress = vars.missionAddressesCurrent[0];
 			vars.missionAddressesCurrent.RemoveAt(0);
 			if (vars.missionAddressesCurrent.Count != 0) {vars.currentMissionWatcher = new MemoryWatcher<byte>(new DeepPointer(vars.missionAddressesCurrent[0]+vars.offset));}
-			if (vars.category.Contains("100%") || vars.category.Contains("hundo")) { vars.hundoMissionDone = true; }
-			else { vars.doSplit = true; }
+			vars.missionPassed = true;
 			vars.checkCurrentMission = false;
 		}
 		
 		else {vars.checkCurrentMission = true;}
 	}
 	
-	// Final split for any%
-	// That timer variable is used in different missions so we're making sure that we're on The Exchange
-	// by also checking for variable that is set in the very last part of the mission.
-	// Timer variable is changed on the fade out when you lose control.
-	else if (vars.category.Contains("any") || vars.category.Contains("beat the game"))
-	{
-		if (current.exchangeHelipad == 1 && current.exchangeTimer != vars.exchangeTimerOld) {vars.doSplit = true;}
-		vars.exchangeTimerOld = current.exchangeTimer;
-	}
-	
-	// Collectables
-	else if (vars.category.Contains("package") || vars.category.Contains("stunt") ||
+	// Update collectables watcher (if needed)
+	if (vars.category.Contains("package") || vars.category.Contains("stunt") ||
 			vars.category.Contains("jump") || vars.category.Contains("rampage"))
 	{
 		vars.collectable.Update(game);
-		
-		// Split when number of required collectables for next split equals the one ingame.
-		if (vars.collectable.Old < vars.collectableSplitOn[vars.collectableIndex] && vars.collectable.Current == vars.collectableSplitOn[vars.collectableIndex])
-		{
-			vars.doSplit = true;
-			
-			if (vars.collectableIndex < vars.collectableSplitOn.Length-1)
-			{
-				vars.collectableIndex++;
-			}
-		}
 	}
 	
 	// 100%
 	// By default it only splits on missions from 100% section of missionAddresses list and when ingame percentage reaches 100%
 	// It's possible to add optional checks for splits for all kinds of fancy crap in the game
-	if (vars.category.Contains("100%") || vars.category.Contains("hundo")) 
+	else if (vars.category.Contains("100%") || vars.category.Contains("hundo"))
 	{
 		// Keep watchers updated
 		vars.hundoPackages.Update(game);
@@ -465,39 +476,41 @@ update
 		// If you want to split independently of mission, make your checks outside this switch block.
 		// If you need help ping Pitpo on #gta channel on SRL's IRC server.
 		// You can find two more examples of using this switch in Vice City autosplitter
-		switch ((int)vars.hundoCompletedMission)
+		switch ((int)vars.missionPassedAddress)
 		{
 			case 0:
 				break;
-			//case (int)0x35B778;  // The Fuzz Ball - split after missions and the "infamous stunts" are done (it's possible to set up a watcher for idividual stunts, but i'm to lazy to look for addresses)
-			//	if (vars.hundoMissionDone == true && vars.hundoStunts.Current - vars.previousStunts >= 3)
+			//case (int)0x35B778:  // The Fuzz Ball - split after mission and the "infamous stunts" are done (it's possible to set up a watcher for individual stunts, but i'm to lazy to look for addresses)
+			//	if (vars.missionPassed && vars.hundoStunts.Current - vars.previousStunts >= 3)
 			//	{
 			//		vars.hundoShouldSplit = true;
-			//		vars.hundoMissionDone = false;
+			//		vars.missionPassed = false;
 			//	}
 			default:
-				if (vars.hundoMissionDone == true)
+				if (vars.missionPassed)
 				{
 					vars.hundoShouldSplit = true;
-					vars.hundoMissionDone = false;
+					vars.missionPassed = false;
+					vars.splitOnMissionHundo = false; // split after mission pass by default
 				}
 				break;
-		}
-		
-		if (vars.hundoShouldSplit == true) 
-		{ 
-			vars.doSplit = true;
-			vars.hundoShouldSplit = false;
 		}
 	}
 }
 
 start
 {
-	if (vars.doStart)
+	// Starting the splits after the initial cutscene skip.
+	if (vars.skipInitialCutsceneCheck.Old == 0 && vars.skipInitialCutsceneCheck.Current == 3841)
 	{
 		// Makes a copy of the mission memory addresses list (so it can be edited and then restored on reset).
 		vars.missionAddressesCurrent = new List<int>(vars.missionAddresses);
+		if (vars.splitOnMission == 2)
+		{
+			vars.OMSplitCurrent = new List<int>(vars.OMSplit);
+		}
+		vars.missionPassed = false;
+		vars.missionPassedAddress = 0x0;
 		
 		if (vars.missionAddressesCurrent.Count != 0) {
 			vars.currentMissionWatcher = new MemoryWatcher<byte>(new DeepPointer(vars.missionAddressesCurrent[0]+vars.offset));
@@ -512,12 +525,97 @@ start
 		{
 			vars.progressOld = 0;
 			vars.progressReal = 0;
-			if (vars.missionAddressesCurrent.Count != 0) {vars.hundoCompletedMission = vars.missionAddressesCurrent[0];}
 		}
 	}
 	
-	return vars.doStart;
+	return vars.skipInitialCutsceneCheck.Old == 0 && vars.skipInitialCutsceneCheck.Current == 3841;
 }
 
-reset {return vars.doReset;}
-split {return vars.doSplit;}
+reset
+{
+	// Works out the current real time in seconds, so it can be compared to.
+	// going to use ~5 seconds for GTA3 just to be safe for SRL races and such, might need to be higher?
+	var currentRealTime = timer.CurrentTime.RealTime.ToString();
+	var currentRealTimeInSeconds = TimeSpan.Parse(currentRealTime).TotalSeconds;
+	
+	// Resetting the splits if needed.
+	return vars.gameState.Old == 9 && vars.gameState.Current == 8 && currentRealTimeInSeconds > 5;
+}
+
+split
+{
+	if (vars.missionPassed && !vars.category.Contains("100%") && !vars.category.Contains("hundo"))
+	{
+		switch ((int)vars.splitOnMission) {
+			case 1:	// Split on every onMissionFlag 0->1 change (but only on story missions)
+			{
+				if (vars.onMissionFlag.Current == 1 && vars.onMissionFlag.Old == 0 && !vars.skipSplit) { goto case 0; }
+				else { break; }
+			}
+			case 2:	// Split on selected onMissionFlag 0->1 changes
+			{
+				if (vars.OMSplitCurrent.Count != 0)
+				{
+					if (vars.missionPassedAddress == vars.OMSplitCurrent[0])
+					{
+						if (vars.onMissionFlag.Current == 1 && vars.onMissionFlag.Old == 0 && !vars.skipSplit)
+						{
+							vars.OMSplitCurrent.RemoveAt(0);
+							goto case 0;
+						} else { break; }
+					} else { goto case 0; }
+				} else { goto case 0; }
+			}
+			case 0: // Split after mission pass
+			default:
+			{
+				vars.missionPassed = false;
+				return true;
+				break;
+			}
+		}
+	}
+	
+	// Final split for any%
+	// That timer variable is used in different missions so we're making sure that we're on The Exchange
+	// by also checking for variable that is set in the very last part of the mission.
+	// Timer variable is changed on the fade out when you lose control.
+	if ((vars.category.Contains("any") || vars.category.Contains("beat the game")) && vars.missionAddressesCurrent.Count == 0)
+	{
+		return current.exchangeHelipad == 1 && current.exchangeTimer != old.exchangeTimer;
+	}
+	
+	// Collectables
+	else if (vars.category.Contains("package") || vars.category.Contains("stunt") ||
+			vars.category.Contains("jump") || vars.category.Contains("rampage"))
+	{
+		// Split when number of required collectables for next split equals the one ingame.
+		if (vars.collectable.Old < vars.collectableSplitOn[vars.collectableIndex] && vars.collectable.Current == vars.collectableSplitOn[vars.collectableIndex])
+		{
+			if (vars.collectableIndex < vars.collectableSplitOn.Length-1)
+			{
+				vars.collectableIndex++;
+			}
+			return true;
+		}
+	}
+	
+	// 100%
+	else if (vars.category.Contains("100%") || vars.category.Contains("hundo"))
+	{
+		if (vars.hundoShouldSplit)
+		{
+			if (vars.splitOnMissionHundo) 
+			{
+				if (vars.onMissionFlag.Current == 1 && vars.onMissionFlag.Old == 0 && !vars.skipSplit) 
+				{
+					vars.splitOnMissionHundo = false;
+					vars.hundoShouldSplit = false;
+					return true;
+				}
+			} else {
+				return true;
+			}
+		}
+	}
+}
