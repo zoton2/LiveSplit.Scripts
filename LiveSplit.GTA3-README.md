@@ -5,8 +5,8 @@
 1. Download the latest script from [here](https://raw.githubusercontent.com/zoton2/LiveSplit.Scripts/master/LiveSplit.GTA3.asl) (right-click > Save As...); save it somewhere memorable.
 2. Add the script to your LiveSplit layout: right-click > Edit Layout... > + > Control > Scriptable Auto Splitter, then double-click it in the list and browse for the script, wherever you saved it.
 3. *(Optional)* Edit the script to change what missions you want to split for (you will probably want to do this if you intend to use it for All Missions); open the file in a text editor (e.g. Notepad) and look at the comments.
-3.1 *(Optional)* You can edit "splitOnMission" variable to autosplit after you start the next mission rather than at the end of current mission.
-4. Make sure you save your layout if you always want the autosplitter to be active!
+4. *(Optional)* You can edit "splitOnMission" variable to autosplit after you start the next mission rather than at the end of current mission.
+5. Make sure you save your layout if you always want the autosplitter to be active!
 
 **What is Autosplit? (by default):**
 
