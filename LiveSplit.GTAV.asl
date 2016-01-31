@@ -53,6 +53,11 @@ state("GTA5", "RGSC6171")
 	int loading : 0x220D0B0;
 }
 
+state("GTA5", "Steam6171")
+{
+	int loading : 0x22102B0;
+}
+
 init
 {
 	switch (modules.First().ModuleMemorySize)
@@ -86,6 +91,9 @@ init
 			break;
 		case 72008704:
 			version = "RGSC6171";
+			break;
+		case 70954496:
+			version = "Steam6171";
 			break;
 	}
 }
