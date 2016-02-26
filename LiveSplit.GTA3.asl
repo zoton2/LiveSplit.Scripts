@@ -394,7 +394,7 @@ update
 		// There must be other way to do it...
 		if ((vars.onMissionFlagFirefighter.Current == 1 && vars.onMissionFlagFirefighter.Old == 0) ||
 			(vars.onMissionFlagParamedic.Current == 1 && vars.onMissionFlagParamedic.Old == 0) ||
-			(vars.onMissionFlagRampage.Current == 1 && vars.onMissionFlagRampage.Old != 0) ||
+			(vars.onMissionFlagRampage.Current == 1 && vars.onMissionFlagRampage.Old != 1) ||
 			(vars.onMissionFlagTaxi.Current == 1 && vars.onMissionFlagTaxi.Old == 0) ||
 			(vars.onMissionFlagVigilante.Current == 1 && vars.onMissionFlagVigilante.Old == 0) ||
 			((vars.lastOddJobThread.Current == 104 || vars.lastOddJobThread.Current == 119) && vars.lastOddJobThread.Current != vars.lastOddJobThread.Old))
