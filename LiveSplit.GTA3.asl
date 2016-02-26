@@ -60,9 +60,9 @@ init
 			vars.missionAddresses.Add(0x35B7A0);  // The Pick-Up
 			vars.missionAddresses.Add(0x35B7A4);  // Salvatore's Called a Meeting
 			vars.missionAddresses.Add(0x35B7B4);  // Chaperone
-			vars.missionAddresses.Add(0x35B7B8);  // Cutting the Grass
 			vars.missionAddresses.Add(0x35B7A8);  // Triads and Tribulations
-			vars.missionAddresses.Add(0x35B7AC);  // Blow Fish
+			vars.missionAddresses.Add(0x35B7B8);  // Cutting the Grass
+			//vars.missionAddresses.Add(0x35B7AC);  // Blow Fish - Apparently, due to the instapass magic it doesn't autosplit, because mission "fails" or something
 			//vars.missionAddresses.Add(0x35B7BC);  // Bomb Da Base: Act I
 			vars.missionAddresses.Add(0x35B7C0);  // Bomb Da Base: Act II
 			vars.missionAddresses.Add(0x35B7C4);  // Last Requests
@@ -83,9 +83,8 @@ init
 		}
 		
 		///////////////////// A L L   M I S S I O N S /////////////////////
-		// Mission order may need changing (I think this is Omega's new route).
+		// Mission order needs changing (this is outdated Omega's route).
 		// It's important to list missions here in the exact same order you do them during the run.
-		// You may want to rearrange this list for your needs.
 		// It's recommended to split at least every few missions in case something unexpected happens in the run.
 		// Use the "Bling-Bling Scramble" split at your own risk, I need to figure out if it works or not.
 		else if (vars.category.Contains("missions"))
@@ -395,7 +394,7 @@ update
 		// There must be other way to do it...
 		if ((vars.onMissionFlagFirefighter.Current == 1 && vars.onMissionFlagFirefighter.Old == 0) ||
 			(vars.onMissionFlagParamedic.Current == 1 && vars.onMissionFlagParamedic.Old == 0) ||
-			(vars.onMissionFlagRampage.Current == 1 && vars.onMissionFlagRampage.Old == 0) ||
+			(vars.onMissionFlagRampage.Current == 1 && vars.onMissionFlagRampage.Old != 0) ||
 			(vars.onMissionFlagTaxi.Current == 1 && vars.onMissionFlagTaxi.Old == 0) ||
 			(vars.onMissionFlagVigilante.Current == 1 && vars.onMissionFlagVigilante.Old == 0) ||
 			((vars.lastOddJobThread.Current == 104 || vars.lastOddJobThread.Current == 119) && vars.lastOddJobThread.Current != vars.lastOddJobThread.Old))
