@@ -3,6 +3,14 @@
 //   or they use the "No Automatic Saved Game Load" mod in the mod launcher. Not a big issue though.
 //   > This bug happens because the newGame variable needs to change from 1 to 0.
 
+// Notes:
+// > Normal missions will split even if you don't complete them fully or are playing from a save file,
+//   so it works with NG+ and Any% as well.
+// > I added some code for settings for gags/clothing/wasps but don't know if they're wanted or useful enough
+//   to code the actual splitting for them, so they're commented out for now.
+// > This code should be idiot proof, so if you accidentally go to a higher level or mission in NG+, you should
+//   still be able to go back to the correct mission and the split should still work from there on.
+
 state("Simpsons")
 {
 	// Some basic non-stat memory addresses are stored here.
@@ -20,475 +28,326 @@ state("Simpsons")
 
 startup
 {
-	// Declaring variables and stuff.
-	refreshRate = 30;
+	// Declaring variables.
+	vars.coinGrindingDone = false;
+	vars.prevPhase = null;
+	
+	// A simple action to reset some variables in multiple parts of the script later.
+	Action ResetVars = () => {
+		vars.highestLevel = 0;
+		vars.highestMission = new int[7];
+	};
+	vars.resetVariables = ResetVars;
 	
 	// Level 1 settings.
 	settings.Add("level1", false, "Level 1");
-	settings.SetToolTip("level1", "Splits when you move to the next level.");
-	settings.CurrentDefaultParent = "level1";
-	settings.Add("L1Tutorial", false, "Tutorial Mission");
-	settings.Add("L1M1", false, "Mission 1");
-	settings.Add("L1M2", false, "Mission 2");
-	settings.Add("L1M3", false, "Mission 3");
-	settings.Add("L1M4", false, "Mission 4");
-	settings.Add("L1M5", false, "Mission 5");
-	settings.Add("L1M6", false, "Mission 6");
-	settings.Add("L1BM", false, "Bonus Mission");
-	settings.Add("L1TimeTrial", false, "Time Trial Race");
-	settings.Add("L1CircuitRace", false, "Circuit Race");
-	settings.Add("L1CheckpointRace", false, "Checkpoint Race");
-	settings.CurrentDefaultParent = null;
+	settings.Add("L1M0", false, "0: The Cola Caper (Tutorial Mission)", "level1");
+	settings.Add("L1M1", false, "1: S-M-R-T", "level1");
+	settings.Add("L1M2", false, "2: Petty Theft Homer", "level1");
+	settings.Add("L1M3", false, "3: Office Spaced", "level1");
+	settings.Add("L1M4", false, "4: Blind Big Brother", "level1");
+	settings.Add("L1M5", false, "5: Flowers by Irene", "level1");
+	settings.Add("L1M6", false, "6: Bonestorm Storm", "level1");
+	settings.Add("L1M7", false, "7: The Fat and Furious", "level1");
+	settings.SetToolTip("L1M7", "Splits when you move to the next level.");
+	settings.Add("l1100%", false, "100%", "level1");
+	settings.Add("L1Races", false, "Races", "l1100%");
+	settings.Add("L1TimeTrial", false, "Time Trial", "L1Races");
+	settings.Add("L1CircuitRace", false, "Circuit", "L1Races");
+	settings.Add("L1CheckpointRace", false, "Checkpoint", "L1Races");
+	/*settings.Add("L1CollectorCards", false, "Collector Cards", "level1");
+	for (var i = 1; i <= 7; i++) {
+		settings.Add("L1CollectorCard"+i, false, i.ToString(), "L1CollectorCards");
+	}
+	settings.Add("L1Wasps", false, "Wasp Cameras", "level1");
+	for (var i = 1; i <= 20; i++) {
+		settings.Add("L1Wasp"+i, false, i.ToString(), "L1Wasps");
+	}
+	settings.Add("L1Gags", false, "Gags", "level1");
+	for (var i = 1; i <= 15; i++) {
+		settings.Add("L1Gag"+i, false, i.ToString(), "L1Gags");
+	}*/
+	settings.Add("L1BM", false, "Bonus Mission: This Old Shanty", "l1100%");
 	
 	// Level 2 settings.
 	settings.Add("level2", false, "Level 2");
-	settings.SetToolTip("level2", "Splits when you move to the next level.");
-	settings.CurrentDefaultParent = "level2";
-	settings.Add("L2M1", false, "Mission 1");
-	settings.Add("L2M2", false, "Mission 2");
-	settings.Add("L2M3", false, "Mission 3");
-	settings.Add("L2M4", false, "Mission 4");
-	settings.Add("L2M5", false, "Mission 5");
-	settings.Add("L2M6", false, "Mission 6");
-	settings.Add("L2BM", false, "Bonus Mission");
-	settings.Add("L2TimeTrial", false, "Time Trial Race");
-	settings.Add("L2CircuitRace", false, "Circuit Race");
-	settings.Add("L2CheckpointRace", false, "Checkpoint Race");
-	settings.CurrentDefaultParent = null;
+	settings.Add("L2M1", false, "1: Detention Deficit Disorder", "level2");
+	settings.Add("L2M2", false, "2: Weapons of Mass Delinquency", "level2");
+	settings.Add("L2M3", false, "3: Vox Nerduli", "level2");
+	settings.Add("L2M4", false, "4: Bart 'n' Frink", "level2");
+	settings.Add("L2M5", false, "5: Better than Beef", "level2");
+	settings.Add("L2M6", false, "6: Monkey See, Monkey D'oh!", "level2");
+	settings.Add("L2M7", false, "7: Cell-Outs", "level2");
+	settings.SetToolTip("L2M7", "Splits when you move to the next level.");
+	settings.Add("l2100%", false, "100%", "level2");
+	settings.Add("L2Races", false, "Races", "l2100%");
+	settings.Add("L2TimeTrial", false, "Time Trial", "L2Races");
+	settings.Add("L2CircuitRace", false, "Circuit", "L2Races");
+	settings.Add("L2CheckpointRace", false, "Checkpoint", "L2Races");
+	/*settings.Add("L2CollectorCards", false, "Collector Cards", "level2");
+	for (var i = 1; i <= 7; i++) {
+		settings.Add("L2CollectorCard"+i, false, i.ToString(), "L2CollectorCards");
+	}
+	settings.Add("L2Wasps", false, "Wasp Cameras", "level2");
+	for (var i = 1; i <= 20; i++) {
+		settings.Add("L2Wasp"+i, false, i.ToString(), "L2Wasps");
+	}
+	settings.Add("L2Gags", false, "Gags", "level2");
+	for (var i = 1; i <= 11; i++) {
+		settings.Add("L2Gag"+i, false, i.ToString(), "L2Gags");
+	}*/
+	settings.Add("L2BM", false, "Bonus Mission: Dial B for Blood", "l2100%");
 	
 	// Level 3 settings.
 	settings.Add("level3", false, "Level 3");
-	settings.SetToolTip("level3", "Splits when you move to the next level.");
-	settings.CurrentDefaultParent = "level3";
-	settings.Add("L3M1", false, "Mission 1");
-	settings.Add("L3M2", false, "Mission 2");
-	settings.Add("L3M3", false, "Mission 3");
-	settings.Add("L3M4", false, "Mission 4");
-	settings.Add("L3M5", false, "Mission 5");
-	settings.Add("L3M6", false, "Mission 6");
-	settings.Add("L3BM", false, "Bonus Mission");
-	settings.Add("L3TimeTrial", false, "Time Trial Race");
-	settings.Add("L3CircuitRace", false, "Circuit Race");
-	settings.Add("L3CheckpointRace", false, "Checkpoint Race");
-	settings.CurrentDefaultParent = null;
+	settings.Add("L3M1", false, "1: Nerd Race Queen", "level3");
+	settings.Add("L3M2", false, "2: Clueless", "level3");
+	settings.Add("L3M3", false, "3: Bonfire of the Manatees", "level3");
+	settings.Add("L3M4", false, "4: Operation Hellfish", "level3");
+	settings.Add("L3M5", false, "5: Slithery Sleuthing", "level3");
+	settings.Add("L3M6", false, "6: Fishy Deals", "level3");
+	settings.Add("L3M7", false, "7: The Old Pirate and the Sea", "level3");
+	settings.SetToolTip("L3M7", "Splits when you move to the next level.");
+	settings.Add("l3100%", false, "100%", "level3");
+	settings.Add("L3Races", false, "Races", "l3100%");
+	settings.Add("L3TimeTrial", false, "Time Trial", "L3Races");
+	settings.Add("L3CircuitRace", false, "Circuit", "L3Races");
+	settings.Add("L3CheckpointRace", false, "Checkpoint", "L3Races");
+	/*settings.Add("L3CollectorCards", false, "Collector Cards", "level3");
+	for (var i = 1; i <= 7; i++) {
+		settings.Add("L3CollectorCard"+i, false, i.ToString(), "L3CollectorCards");
+	}
+	settings.Add("L3Wasps", false, "Wasp Cameras", "level3");
+	for (var i = 1; i <= 20; i++) {
+		settings.Add("L3Wasp"+i, false, i.ToString(), "L3Wasps");
+	}
+	settings.Add("L3Gags", false, "Gags", "level3");
+	for (var i = 1; i <= 11; i++) {
+		settings.Add("L3Gag"+i, false, i.ToString(), "L3Gags");
+	}*/
+	settings.Add("L3BM", false, "Bonus Mission: Princi-Pal", "l3100%");
 	
 	// Level 4 settings.
 	settings.Add("level4", false, "Level 4");
-	settings.SetToolTip("level4", "Splits when you move to the next level.");
-	settings.CurrentDefaultParent = "level4";
-	settings.Add("L4M1", false, "Mission 1");
-	settings.Add("L4M2", false, "Mission 2");
-	settings.Add("L4M3", false, "Mission 3");
-	settings.Add("L4M4", false, "Mission 4");
-	settings.Add("L4M5", false, "Mission 5");
-	settings.Add("L4M6", false, "Mission 6");
-	settings.Add("L4BM", false, "Bonus Mission");
-	settings.Add("L4TimeTrial", false, "Time Trial Race");
-	settings.Add("L4CircuitRace", false, "Circuit Race");
-	settings.Add("L4CheckpointRace", false, "Checkpoint Race");
-	settings.CurrentDefaultParent = null;
+	settings.Add("L4M1", false, "1: For A Few Donuts More", "level4");
+	settings.Add("L4M2", false, "2: Redneck Roundup", "level4");
+	settings.Add("L4M3", false, "3: Ketchup Logic", "level4");
+	settings.Add("L4M4", false, "4: Return of the Nearly-Dead", "level4");
+	settings.Add("L4M5", false, "5: Wolves Stole My Pills", "level4");
+	settings.Add("L4M6", false, "6: Cola Wars", "level4");
+	settings.Add("L4M7", false, "7: From Outer Space", "level4");
+	settings.SetToolTip("L4M7", "Splits when you move to the next level.");
+	settings.Add("l4100%", false, "100%", "level4");
+	settings.Add("L4Races", false, "Races", "l4100%");
+	settings.Add("L4TimeTrial", false, "Time Trial", "L4Races");
+	settings.Add("L4CircuitRace", false, "Circuit", "L4Races");
+	settings.Add("L4CheckpointRace", false, "Checkpoint", "L4Races");
+	/*settings.Add("L4CollectorCards", false, "Collector Cards", "level4");
+	for (var i = 1; i <= 7; i++) {
+		settings.Add("L4CollectorCard"+i, false, i.ToString(), "L4CollectorCards");
+	}
+	settings.Add("L4Wasps", false, "Wasp Cameras", "level4");
+	for (var i = 1; i <= 20; i++) {
+		settings.Add("L4Wasp"+i, false, i.ToString(), "L4Wasps");
+	}
+	settings.Add("L4Gags", false, "Gags", "level4");
+	for (var i = 1; i <= 15; i++) {
+		settings.Add("L4Gag"+i, false, i.ToString(), "L4Gags");
+	}*/
+	settings.Add("L4BM", false, "Bonus Mission: Beached Love", "l4100%");
 	
 	// Level 5 settings.
 	settings.Add("level5", false, "Level 5");
-	settings.SetToolTip("level5", "Splits when you move to the next level.");
-	settings.CurrentDefaultParent = "level5";
-	settings.Add("L5M1", false, "Mission 1");
-	settings.Add("L5M2", false, "Mission 2");
-	settings.Add("L5M3", false, "Mission 3");
-	settings.Add("L5M4", false, "Mission 4");
-	settings.Add("L5M5", false, "Mission 5");
-	settings.Add("L5M6", false, "Mission 6");
-	settings.Add("L5BM", false, "Bonus Mission");
-	settings.Add("L5TimeTrial", false, "Time Trial Race");
-	settings.Add("L5CircuitRace", false, "Circuit Race");
-	settings.Add("L5CheckpointRace", false, "Checkpoint Race");
-	settings.CurrentDefaultParent = null;
+	settings.Add("L5M1", false, "1: Incriminating Caffeine", "level5");
+	settings.Add("L5M2", false, "2: ...and Baby Makes 8", "level5");
+	settings.Add("L5M3", false, "3: Eight is Too Much", "level5");
+	settings.Add("L5M4", false, "4: This Little Piggy", "level5");
+	settings.Add("L5M5", false, "5: Never Trust a Snake", "level5");
+	settings.Add("L5M6", false, "6: Kwik Cash", "level5");
+	settings.Add("L5M7", false, "7: Curious Curator", "level5");
+	settings.SetToolTip("L5M7", "Splits when you move to the next level.");
+	settings.Add("l5100%", false, "100%", "level5");
+	settings.Add("L5Races", false, "Races", "l5100%");
+	settings.Add("L5TimeTrial", false, "Time Trial", "L5Races");
+	settings.Add("L5CircuitRace", false, "Circuit", "L5Races");
+	settings.Add("L5CheckpointRace", false, "Checkpoint", "L5Races");
+	/*settings.Add("L5CollectorCards", false, "Collector Cards", "level5");
+	for (var i = 1; i <= 7; i++) {
+		settings.Add("L5CollectorCard"+i, false, i.ToString(), "L5CollectorCards");
+	}
+	settings.Add("L5Wasps", false, "Wasp Cameras", "level5");
+	for (var i = 1; i <= 20; i++) {
+		settings.Add("L5Wasp"+i, false, i.ToString(), "L5Wasps");
+	}
+	settings.Add("L5Gags", false, "Gags", "level5");
+	for (var i = 1; i <= 6; i++) {
+		settings.Add("L5Gag"+i, false, i.ToString(), "L5Gags");
+	}*/
+	settings.Add("L5BM", false, "Bonus Mission: Kinky Frinky", "l5100%");
 	
 	// Level 6 settings.
 	settings.Add("level6", false, "Level 6");
-	settings.SetToolTip("level6", "Splits when you move to the next level.");
-	settings.CurrentDefaultParent = "level6";
-	settings.Add("L6M1", false, "Mission 1");
-	settings.Add("L6M2", false, "Mission 2");
-	settings.Add("L6M3", false, "Mission 3");
-	settings.Add("L6M4", false, "Mission 4");
-	settings.Add("L6M5", false, "Mission 5");
-	settings.Add("L6M6", false, "Mission 6");
-	settings.Add("L6BM", false, "Bonus Mission");
-	settings.Add("L6TimeTrial", false, "Time Trial Race");
-	settings.Add("L6CircuitRace", false, "Circuit Race");
-	settings.Add("L6CheckpointRace", false, "Checkpoint Race");
-	settings.CurrentDefaultParent = null;
+	settings.Add("L6M1", false, "1: Going to the Lu'", "level6");
+	settings.Add("L6M2", false, "2: Getting Down with the Clown", "level6");
+	settings.Add("L6M3", false, "3: Lab Coat Caper", "level6");
+	settings.Add("L6M4", false, "4: Duff for Me, Duff for You", "level6");
+	settings.Add("L6M5", false, "5: Full Metal Jackass", "level6");
+	settings.Add("L6M6", false, "6: Set To Kill", "level6");
+	settings.Add("L6M7", false, "7: Kang and Kodos Strike Back", "level6");
+	settings.SetToolTip("L6M7", "Splits when you move to the next level.");
+	settings.Add("l6100%", false, "100%", "level6");
+	settings.Add("L6Races", false, "Races", "l6100%");
+	settings.Add("L6TimeTrial", false, "Time Trial", "L6Races");
+	settings.Add("L6CircuitRace", false, "Circuit", "L6Races");
+	settings.Add("L6CheckpointRace", false, "Checkpoint", "L6Races");
+	/*settings.Add("L6CollectorCards", false, "Collector Cards", "level6");
+	for (var i = 1; i <= 7; i++) {
+		settings.Add("L6CollectorCard"+i, false, i.ToString(), "L6CollectorCards");
+	}
+	settings.Add("L6Wasps", false, "Wasp Cameras", "level6");
+	for (var i = 1; i <= 20; i++) {
+		settings.Add("L6Wasp"+i, false, i.ToString(), "L6Wasps");
+	}
+	settings.Add("L6Gags", false, "Gags", "level6");
+	for (var i = 1; i <= 11; i++) {
+		settings.Add("L6Gag"+i, false, i.ToString(), "L6Gags");
+	}*/
+	settings.Add("L6BM", false, "Bonus Mission: Milking the Pigs", "l6100%");
 	
 	// Level 7 settings.
 	settings.Add("level7", false, "Level 7");
-	settings.CurrentDefaultParent = "level7";
-	settings.Add("L7M1", false, "Mission 1");
-	settings.Add("L7M2", false, "Mission 2");
-	settings.Add("L7M3", false, "Mission 3");
-	settings.Add("L7M4", false, "Mission 4");
-	settings.Add("L7M5", false, "Mission 5");
-	settings.Add("L7M6", false, "Mission 6");
-	settings.Add("L7BM", false, "Bonus Mission");
-	settings.Add("L7TimeTrial", false, "Time Trial Race");
-	settings.Add("L7CircuitRace", false, "Circuit Race");
-	settings.Add("L7CheckpointRace", false, "Checkpoint Race");
-	settings.CurrentDefaultParent = null;
+	settings.Add("L7M1", false, "1: Rigor Motors", "level7");
+	settings.Add("L7M2", false, "2: Long Black Probes", "level7");
+	settings.Add("L7M3", false, "3: Pocket Protector", "level7");
+	settings.Add("L7M4", false, "4: There's Something About Monty", "level7");
+	settings.Add("L7M5", false, "5: Alien \"Auto\"topsy Part I", "level7");
+	settings.Add("L7M6", false, "6: Alien \"Auto\"topsy Part II", "level7");
+	settings.Add("L7M7", false, "7: Alien \"Auto\"topsy Part III", "level7");
+	settings.SetToolTip("L7M7", "Splits as soon as the final FMV starts playing.");
+	settings.Add("l7100%", false, "100%", "level7");
+	settings.Add("L7Races", false, "Races", "l7100%");
+	settings.Add("L7TimeTrial", false, "Time Trial", "L7Races");
+	settings.Add("L7CircuitRace", false, "Circuit", "L7Races");
+	settings.Add("L7CheckpointRace", false, "Checkpoint", "L7Races");
+	/*settings.Add("L7CollectorCards", false, "Collector Cards", "level7");
+	for (var i = 1; i <= 7; i++) {
+		settings.Add("L7CollectorCard"+i, false, i.ToString(), "L7CollectorCards");
+	}
+	settings.Add("L7Wasps", false, "Wasp Cameras", "level7");
+	for (var i = 1; i <= 20; i++) {
+		settings.Add("L7Wasp"+i, false, i.ToString(), "L7Wasps");
+	}
+	settings.Add("L7Gags", false, "Gags", "level7");
+	for (var i = 1; i <= 15; i++) {
+		settings.Add("L7Gag"+i, false, i.ToString(), "L7Gags");
+	}*/
+	settings.Add("L7BM", false, "Bonus Mission: Flaming Tires", "l7100%");
 	
-	// Add the setting for the final non-100% split.
-	settings.Add("finalSplit", false, "Final Split (non-100%)");
-	settings.SetToolTip("finalSplit", "Splits as soon as the final FMV starts playing.");
+	// Add the header for misc. 100% stuff.
+	settings.Add("misc100%", false, "Miscellaneous 100% Stuff");
 	
-	// Coin grinding setting!
-	settings.Add("coinGrinding", false, "Coin Grinding (6200 L6M6)");
+	// Add the setting for coin grinding!
+	settings.Add("coinGrinding", false, "Coin Grinding (6200 L6M6)", "misc100%");
 	settings.SetToolTip("coinGrinding", "Splits once you have more than 6200 coins and you're on \"Set to Kill\".");
 	
-	// Add the settings for picking up the bonus movie ticket.
-	settings.Add("BonusMovie", false, "Bonus Movie");
+	// Add the setting for picking up the bonus movie ticket.
+	settings.Add("BonusMovie", false, "Bonus Movie", "misc100%");
 	settings.SetToolTip("BonusMovie", "Splits when you pick up the ticket in the Android's Dungeon.");
 	
-	// Add the setting for the final 100% split.
-	settings.Add("finalSplit100", false, "Final Split (100%)");
-	settings.SetToolTip("finalSplit100", "Splits after every goal towards 100% has been completed.");
-	
 	// Add the setting for a specific card. For Mango <3.
-	settings.Add("mangosCard", false, "Mango's Card (L5 Card 3)");
+	settings.Add("mangosCard", false, "Mango's Card (L5 Card 3)", "misc100%");
 	settings.SetToolTip("mangosCard", "For Mango <3.");
 	
-	// Stores all of the memory addresses for all of the specific (100%) stats in the game.
-	vars.statWatchers = new MemoryWatcherList();
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, unchecked((int)0xFFFFFE28))) { Name = "L1CollectorCards" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x238)) { Name = "L1Wasps" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x24C)) { Name = "L1Gags" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x234)) { Name = "L1CharacterClothing" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x230)) { Name = "L1Vehicles" });  // Doesn't count cars won.
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x19C)) { Name = "L1TimeTrial" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x1BC)) { Name = "L1CircuitRace" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x1DC)) { Name = "L1CheckpointRace" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xBC)) { Name = "L1M1" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xDC)) { Name = "L1M2" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xFC)) { Name = "L1M3" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x11C)) { Name = "L1M4" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x13C)) { Name = "L1M5" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x15C)) { Name = "L1M6" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x17C)) { Name = "L1M7" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x1FC)) { Name = "L1BM" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, unchecked((int)0xFFFFFE48))) { Name = "L2CollectorCards" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x4A4)) { Name = "L2Wasps" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x4B8)) { Name = "L2Gags" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x4A0)) { Name = "L2CharacterClothing" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x49C)) { Name = "L2Vehicles" });  // Doesn't count cars won.
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x408)) { Name = "L2TimeTrial" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x428)) { Name = "L2CircuitRace" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x448)) { Name = "L2CheckpointRace" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x308)) { Name = "L2M1" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x328)) { Name = "L2M2" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x348)) { Name = "L2M3" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x368)) { Name = "L2M4" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x388)) { Name = "L2M5" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x3A8)) { Name = "L2M6" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x3C8)) { Name = "L2M7" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x468)) { Name = "L2BM" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, unchecked((int)0xFFFFFE68))) { Name = "L3CollectorCards" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x710)) { Name = "L3Wasps" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x724)) { Name = "L3Gags" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x70C)) { Name = "L3CharacterClothing" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x708)) { Name = "L3Vehicles" });  // Doesn't count cars won.
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x674)) { Name = "L3TimeTrial" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x694)) { Name = "L3CircuitRace" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x6B4)) { Name = "L3CheckpointRace" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x574)) { Name = "L3M1" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x594)) { Name = "L3M2" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x5B4)) { Name = "L3M3" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x5D4)) { Name = "L3M4" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x5F4)) { Name = "L3M5" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x614)) { Name = "L3M6" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x634)) { Name = "L3M7" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x6D4)) { Name = "L3BM" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, unchecked((int)0xFFFFFE88))) { Name = "L4CollectorCards" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x97C)) { Name = "L4Wasps" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x990)) { Name = "L4Gags" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x978)) { Name = "L4CharacterClothing" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x974)) { Name = "L4Vehicles" });  // Doesn't count cars won.
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x8E0)) { Name = "L4TimeTrial" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x900)) { Name = "L4CircuitRace" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x920)) { Name = "L4CheckpointRace" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x7E0)) { Name = "L4M1" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x800)) { Name = "L4M2" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x820)) { Name = "L4M3" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x840)) { Name = "L4M4" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x860)) { Name = "L4M5" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x880)) { Name = "L4M6" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x8A0)) { Name = "L4M7" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x940)) { Name = "L4BM" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, unchecked((int)0xFFFFFEA8))) { Name = "L5CollectorCards" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xBE8)) { Name = "L5Wasps" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xBFC)) { Name = "L5Gags" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xBE4)) { Name = "L5CharacterClothing" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xBE0)) { Name = "L5Vehicles" });  // Doesn't count cars won.
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xB4C)) { Name = "L5TimeTrial" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xB6C)) { Name = "L5CircuitRace" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xB8C)) { Name = "L5CheckpointRace" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xA4C)) { Name = "L5M1" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xA6C)) { Name = "L5M2" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xA8C)) { Name = "L5M3" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xAAC)) { Name = "L5M4" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xACC)) { Name = "L5M5" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xAEC)) { Name = "L5M6" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xB0C)) { Name = "L5M7" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xBAC)) { Name = "L5BM" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, unchecked((int)0xFFFFFEC8))) { Name = "L6CollectorCards" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xE54)) { Name = "L6Wasps" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xE68)) { Name = "L6Gags" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xE50)) { Name = "L6CharacterClothing" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xE4C)) { Name = "L6Vehicles" });  // Doesn't count cars won.
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xDB8)) { Name = "L6TimeTrial" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xDD8)) { Name = "L6CircuitRace" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xDF8)) { Name = "L6CheckpointRace" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xCB8)) { Name = "L6M1" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xCD8)) { Name = "L6M2" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xCF8)) { Name = "L6M3" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xD18)) { Name = "L6M4" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xD38)) { Name = "L6M5" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xD58)) { Name = "L6M6" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xD78)) { Name = "L6M7" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xE18)) { Name = "L6BM" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, unchecked((int)0xFFFFFEE8))) { Name = "L7CollectorCards" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x10C0)) { Name = "L7Wasps" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x10D4)) { Name = "L7Gags" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x10BC)) { Name = "L7CharacterClothing" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x10B8)) { Name = "L7Vehicles" });  // Doesn't count cars won.
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x1024)) { Name = "L7TimeTrial" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x1044)) { Name = "L7CircuitRace" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x1064)) { Name = "L7CheckpointRace" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xF24)) { Name = "L7M1" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xF44)) { Name = "L7M2" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xF64)) { Name = "L7M3" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xF84)) { Name = "L7M4" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xFA4)) { Name = "L7M5" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xFC4)) { Name = "L7M6" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0xFE4)) { Name = "L7M7" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x1084)) { Name = "L7BM" });
-	vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, 0x704)) { Name = "BonusMovie" });
+	// Add the setting for the final 100% split.
+	settings.Add("finalSplit100%", false, "100%", "misc100%");
+	settings.SetToolTip("finalSplit100%", "Splits after every goal towards 100% has been completed.");
 }
 
 init
 {
 	// Declaring variables and stuff.
 	vars.canStart = true;
-	vars.highestLevel = 0;
-	vars.highestMissionL1 = 0;
-	vars.highestMissionL2 = 0;
-	vars.highestMissionL3 = 0;
-	vars.highestMissionL4 = 0;
-	vars.highestMissionL5 = 0;
-	vars.highestMissionL6 = 0;
-	vars.highestMissionL7 = 0;
-	vars.coinGrindingDone = false;
+	vars.resetVariables();
 }
 
 update
 {
-	// Update all of the memory readings for the stats.
-	vars.statWatchers.UpdateAll(game);
+	// Stores the curent phase the timer is in, so we can use the old one on the next frame.
+	current.timerPhase = timer.CurrentPhase;
 	
 	// Checks if we have gotten into a new game (after the intro FMV) and if so toggles the variable on.
 	if (!vars.canStart && current.newGame > old.newGame) {vars.canStart = true;}
+	
+	// Reset some variables when the timer is started, so we don't need to rely on the start action in this script.
+	if (old.timerPhase != current.timerPhase && current.timerPhase == TimerPhase.Running) {
+		vars.resetVariables();
+		
+		// Store the currently set level/mission in case this is being done from a save.
+		vars.highestLevel = current.activeLevel;
+		vars.highestMission[current.activeLevel] = current.activeMission;
+	}
 }
 
 split
 {
-	// Could probably be done a bit neater, but this will do for now.
-	// A check is done to make sure this is the furthest we've been in the game so far.
-	if (current.activeLevel > vars.highestLevel) {
-		vars.highestLevel = current.activeLevel;
-		if (settings["level1"] && old.activeLevel == 0 && current.activeLevel == 1) {return true;}
-		else if (settings["level2"] && old.activeLevel == 1 && current.activeLevel == 2) {return true;}
-		else if (settings["level3"] && old.activeLevel == 2 && current.activeLevel == 3) {return true;}
-		else if (settings["level4"] && old.activeLevel == 3 && current.activeLevel == 4) {return true;}
-		else if (settings["level5"] && old.activeLevel == 4 && current.activeLevel == 5) {return true;}
-		else if (settings["level6"] && old.activeLevel == 5 && current.activeLevel == 6) {return true;}
+	// Probably unnecessary here but I'm using it to make sure none of this code is ran if it's not needed.
+	if (settings.SplitEnabled) {
+		vars.doSplit = false;
+		
+		// If the settings for the level we are currently on are activated.
+		if (settings["level"+(current.activeLevel+1)]) {
+			// If the current mission we're on is the one above the last recorded highest number and we're on the same level.
+			if (current.activeLevel == vars.highestLevel && current.activeMission == vars.highestMission[current.activeLevel]+1) {
+				// Level 1's mission numbers works slightly differently.
+				var onLevel1 = 0;
+				if (current.activeLevel == 0) {onLevel1 = 1;}
+				
+				// Store the actual level/mission number we need to check.
+				var levelNumber = current.activeLevel+1;
+				var missionNumber = current.activeMission-onLevel1;
+				
+				// If the setting for splitting the mission we just finished is set, split!
+				if (settings["L"+levelNumber+"M"+missionNumber]) {vars.doSplit = true;}
+				
+				// Store the mission we are now on as the highest mission.
+				vars.highestMission[current.activeLevel] = current.activeMission;
+			}
+		}
+		
+		// If we're past level 1 and the settings are activated for the previous level.
+		if (current.activeLevel > 0 && settings["level"+current.activeLevel]) {
+			// If we just moved a level higher and all of the missions have been done in the last level.
+			if (current.activeLevel == vars.highestLevel+1 && vars.highestMission[vars.highestLevel] >= 6) {
+				// If the setting for splitting the last mission on the level we just came from is set, split.
+				if (settings["L"+(current.activeLevel)+"M7"]) {vars.doSplit = true;}
+				
+				// Store the level we are now on as the highest level.
+				vars.highestLevel = current.activeLevel;
+			}
+		}
+		
+		// Final split for most full-game categories.
+		if (settings["L7M7"] && vars.highestLevel == 6 && current.lastVideoLoaded == "fmv7.rmv" && current.videoPlaying == 1) {vars.doSplit = true;}
+		
+		// Coin grinding!
+		if (settings["coinGrinding"] && !vars.coinGrindingDone && current.activeLevel == 5 && current.activeMission == 5 && current.coinsTotal > 6200) {
+			vars.coinGrindingDone = true;
+			vars.doSplit = true;
+		}
+		
+		// If something in the code says we should split, then split.
+		if (vars.doSplit) {return true;}
 	}
-	
-	// If we're still on the highest level, we can do some mission checks instead.
-	else if (current.activeLevel == vars.highestLevel) {
-		if (settings["level1"] && current.activeLevel == 0) {
-			if (current.activeMission > vars.highestMissionL1) {
-				vars.highestMissionL1 = current.activeMission;
-				if (settings["L1Tutorial"] && old.activeMission == 0 && current.activeMission == 1) {return true;}
-				else if (settings["L1M1"] && old.activeMission == 1 && current.activeMission == 2) {return true;}
-				else if (settings["L1M2"] && old.activeMission == 2 && current.activeMission == 3) {return true;}
-				else if (settings["L1M3"] && old.activeMission == 3 && current.activeMission == 4) {return true;}
-				else if (settings["L1M4"] && old.activeMission == 4 && current.activeMission == 5) {return true;}
-				else if (settings["L1M5"] && old.activeMission == 5 && current.activeMission == 6) {return true;}
-				else if (settings["L1M6"] && old.activeMission == 6 && current.activeMission == 7) {return true;}
-			}
-			
-			else {
-				if (settings["L1BM"] && vars.statWatchers["L1BM"].Current > vars.statWatchers["L1BM"].Old) {return true;}
-				else if (settings["L1TimeTrial"] && vars.statWatchers["L1TimeTrial"].Current > vars.statWatchers["L1TimeTrial"].Old) {return true;}
-				else if (settings["L1CircuitRace"] && vars.statWatchers["L1CircuitRace"].Current > vars.statWatchers["L1CircuitRace"].Old) {return true;}
-				else if (settings["L1CheckpointRace"] && vars.statWatchers["L1CheckpointRace"].Current > vars.statWatchers["L1CheckpointRace"].Old) {return true;}
-			}
-		}
-		
-		else if (settings["level2"] && current.activeLevel == 1) {
-			if (current.activeMission > vars.highestMissionL2) {
-				vars.highestMissionL2 = current.activeMission;
-				if (settings["L2M1"] && old.activeMission == 0 && current.activeMission == 1) {return true;}
-				else if (settings["L2M2"] && old.activeMission == 1 && current.activeMission == 2) {return true;}
-				else if (settings["L2M3"] && old.activeMission == 2 && current.activeMission == 3) {return true;}
-				else if (settings["L2M4"] && old.activeMission == 3 && current.activeMission == 4) {return true;}
-				else if (settings["L2M5"] && old.activeMission == 4 && current.activeMission == 5) {return true;}
-				else if (settings["L2M6"] && old.activeMission == 5 && current.activeMission == 6) {return true;}
-			}
-			
-			else {
-				if (settings["L2BM"] && vars.statWatchers["L2BM"].Current > vars.statWatchers["L2BM"].Old) {return true;}
-				else if (settings["L2TimeTrial"] && vars.statWatchers["L2TimeTrial"].Current > vars.statWatchers["L2TimeTrial"].Old) {return true;}
-				else if (settings["L2CircuitRace"] && vars.statWatchers["L2CircuitRace"].Current > vars.statWatchers["L2CircuitRace"].Old) {return true;}
-				else if (settings["L2CheckpointRace"] && vars.statWatchers["L2CheckpointRace"].Current > vars.statWatchers["L2CheckpointRace"].Old) {return true;}
-			}
-		}
-		
-		else if (settings["level3"] && current.activeLevel == 2) {
-			if (current.activeMission > vars.highestMissionL3) {
-				vars.highestMissionL3 = current.activeMission;
-				if (settings["L3M1"] && old.activeMission == 0 && current.activeMission == 1) {return true;}
-				else if (settings["L3M2"] && old.activeMission == 1 && current.activeMission == 2) {return true;}
-				else if (settings["L3M3"] && old.activeMission == 2 && current.activeMission == 3) {return true;}
-				else if (settings["L3M4"] && old.activeMission == 3 && current.activeMission == 4) {return true;}
-				else if (settings["L3M5"] && old.activeMission == 4 && current.activeMission == 5) {return true;}
-				else if (settings["L3M6"] && old.activeMission == 5 && current.activeMission == 6) {return true;}
-			}
-			
-			else {
-				if (settings["L3BM"] && vars.statWatchers["L3BM"].Current > vars.statWatchers["L3BM"].Old) {return true;}
-				else if (settings["L3TimeTrial"] && vars.statWatchers["L3TimeTrial"].Current > vars.statWatchers["L3TimeTrial"].Old) {return true;}
-				else if (settings["L3CircuitRace"] && vars.statWatchers["L3CircuitRace"].Current > vars.statWatchers["L3CircuitRace"].Old) {return true;}
-				else if (settings["L3CheckpointRace"] && vars.statWatchers["L3CheckpointRace"].Current > vars.statWatchers["L3CheckpointRace"].Old) {return true;}
-			}
-		}
-		
-		else if (settings["level4"] && current.activeLevel == 3) {
-			if (current.activeMission > vars.highestMissionL4) {
-				vars.highestMissionL4 = current.activeMission;
-				if (settings["L4M1"] && old.activeMission == 0 && current.activeMission == 1) {return true;}
-				else if (settings["L4M2"] && old.activeMission == 1 && current.activeMission == 2) {return true;}
-				else if (settings["L4M3"] && old.activeMission == 2 && current.activeMission == 3) {return true;}
-				else if (settings["L4M4"] && old.activeMission == 3 && current.activeMission == 4) {return true;}
-				else if (settings["L4M5"] && old.activeMission == 4 && current.activeMission == 5) {return true;}
-				else if (settings["L4M6"] && old.activeMission == 5 && current.activeMission == 6) {return true;}
-			}
-			
-			else {
-				if (settings["L4BM"] && vars.statWatchers["L4BM"].Current > vars.statWatchers["L4BM"].Old) {return true;}
-				else if (settings["L4TimeTrial"] && vars.statWatchers["L4TimeTrial"].Current > vars.statWatchers["L4TimeTrial"].Old) {return true;}
-				else if (settings["L4CircuitRace"] && vars.statWatchers["L4CircuitRace"].Current > vars.statWatchers["L4CircuitRace"].Old) {return true;}
-				else if (settings["L4CheckpointRace"] && vars.statWatchers["L4CheckpointRace"].Current > vars.statWatchers["L4CheckpointRace"].Old) {return true;}
-			}
-		}
-		
-		else if (settings["level5"] && current.activeLevel == 4) {
-			if (current.activeMission > vars.highestMissionL5) {
-				vars.highestMissionL5 = current.activeMission;
-				if (settings["L5M1"] && old.activeMission == 0 && current.activeMission == 1) {return true;}
-				else if (settings["L5M2"] && old.activeMission == 1 && current.activeMission == 2) {return true;}
-				else if (settings["L5M3"] && old.activeMission == 2 && current.activeMission == 3) {return true;}
-				else if (settings["L5M4"] && old.activeMission == 3 && current.activeMission == 4) {return true;}
-				else if (settings["L5M5"] && old.activeMission == 4 && current.activeMission == 5) {return true;}
-				else if (settings["L5M6"] && old.activeMission == 5 && current.activeMission == 6) {return true;}
-			}
-			
-			else {
-				if (settings["L5BM"] && vars.statWatchers["L5BM"].Current > vars.statWatchers["L5BM"].Old) {return true;}
-				else if (settings["L5TimeTrial"] && vars.statWatchers["L5TimeTrial"].Current > vars.statWatchers["L5TimeTrial"].Old) {return true;}
-				else if (settings["L5CircuitRace"] && vars.statWatchers["L5CircuitRace"].Current > vars.statWatchers["L5CircuitRace"].Old) {return true;}
-				else if (settings["L5CheckpointRace"] && vars.statWatchers["L5CheckpointRace"].Current > vars.statWatchers["L5CheckpointRace"].Old) {return true;}
-			}
-		}
-		
-		else if (settings["level6"] && current.activeLevel == 5) {
-			if (current.activeMission > vars.highestMissionL6) {
-				vars.highestMissionL6 = current.activeMission;
-				if (settings["L6M1"] && old.activeMission == 0 && current.activeMission == 1) {return true;}
-				else if (settings["L6M2"] && old.activeMission == 1 && current.activeMission == 2) {return true;}
-				else if (settings["L6M3"] && old.activeMission == 2 && current.activeMission == 3) {return true;}
-				else if (settings["L6M4"] && old.activeMission == 3 && current.activeMission == 4) {return true;}
-				else if (settings["L6M5"] && old.activeMission == 4 && current.activeMission == 5) {return true;}
-				else if (settings["L6M6"] && old.activeMission == 5 && current.activeMission == 6) {return true;}
-			}
-			
-			else {
-				if (settings["L6BM"] && vars.statWatchers["L6BM"].Current > vars.statWatchers["L6BM"].Old) {return true;}
-				else if (settings["L6TimeTrial"] && vars.statWatchers["L6TimeTrial"].Current > vars.statWatchers["L6TimeTrial"].Old) {return true;}
-				else if (settings["L6CircuitRace"] && vars.statWatchers["L6CircuitRace"].Current > vars.statWatchers["L6CircuitRace"].Old) {return true;}
-				else if (settings["L6CheckpointRace"] && vars.statWatchers["L6CheckpointRace"].Current > vars.statWatchers["L6CheckpointRace"].Old) {return true;}
-			}
-		}
-		
-		else if (settings["level7"] && current.activeLevel == 6) {
-			if (current.activeMission > vars.highestMissionL7) {
-				vars.highestMissionL7 = current.activeMission;
-				if (settings["L7M1"] && old.activeMission == 0 && current.activeMission == 1) {return true;}
-				else if (settings["L7M2"] && old.activeMission == 1 && current.activeMission == 2) {return true;}
-				else if (settings["L7M3"] && old.activeMission == 2 && current.activeMission == 3) {return true;}
-				else if (settings["L7M4"] && old.activeMission == 3 && current.activeMission == 4) {return true;}
-				else if (settings["L7M5"] && old.activeMission == 4 && current.activeMission == 5) {return true;}
-				else if (settings["L7M6"] && old.activeMission == 5 && current.activeMission == 6) {return true;}
-			}
-			
-			else {
-				if (settings["L7BM"] && vars.statWatchers["L7BM"].Current > vars.statWatchers["L7BM"].Old) {return true;}
-				else if (settings["L7TimeTrial"] && vars.statWatchers["L7TimeTrial"].Current > vars.statWatchers["L7TimeTrial"].Old) {return true;}
-				else if (settings["L7CircuitRace"] && vars.statWatchers["L7CircuitRace"].Current > vars.statWatchers["L7CircuitRace"].Old) {return true;}
-				else if (settings["L7CheckpointRace"] && vars.statWatchers["L7CheckpointRace"].Current > vars.statWatchers["L7CheckpointRace"].Old) {return true;}
-			}
-		}
-	}
-	
-	// Final split for most full-game categories.
-	else if (settings["finalSplit"] && vars.highestLevel == 6 && current.lastVideoLoaded == "fmv7.rmv" && current.videoPlaying == 1) {return true;}
-	
-	// Coin grinding!
-	else if (settings["coinGrinding"] && !vars.coinGrindingDone && current.activeLevel == 5 && current.activeMission == 5 && current.coinsTotal > 6200) {
-		vars.coinGrindingDone = true;
-		return true;
-	}
-	
-	// Splits once the bonus movie ticket has been picked up.
-	else if (settings["BonusMovie"] && vars.statWatchers["BonusMovie"].Current > vars.statWatchers["BonusMovie"].Old) {return true;}
-	
-	// Final split for 100%, once all goals that count towards 100% are completed.
-	// While the game is booting (state 0) the values can be messed up so don't wanna check there!
-	else if (settings["finalSplit100"] && current.gameState > 0) {
-		// Add the total objectives done together.
-		var total = ((MemoryWatcherList)vars.statWatchers).Sum(x => (byte)x.Current);
-		
-		// If all of the objectives have been done, split!
-		if (total == 393) {return true;}
-	}
-	
-	// A split for Mango to help with his splits because this was in his terrible script.
-	else if (settings["mangosCard"] && vars.statWatchers["L5CollectorCards"].Old == 2 && vars.statWatchers["L5CollectorCards"].Current == 3) {return true;}
 }
 
 start
 {
-	// Technically we could just check newGame but I put the other ones in for safety.
 	// Done on the same frame as the reset, when a new game is started and the FMV is loaded in.
 	if (vars.canStart && current.mainMenu == 1 && current.newGame == 0 && current.lastVideoLoaded == "fmv1a.rmv") {
-		// Resetting variables.
+		// Resetting variables. This code needs to be triggered even if the user choses not to use the start split.
 		vars.canStart = false;
-		vars.highestLevel = 0;
-		vars.highestMissionL1 = 0;
-		vars.highestMissionL2 = 0;
-		vars.highestMissionL3 = 0;
-		vars.highestMissionL4 = 0;
-		vars.highestMissionL5 = 0;
-		vars.highestMissionL6 = 0;
-		vars.highestMissionL7 = 0;
 		vars.coinGrindingDone = false;
+		vars.resetVariables();
 		
 		return true;
 	}
@@ -496,9 +355,11 @@ start
 
 reset
 {
-	// Technically we could just check newGame but I put the other ones in for safety.
-	// Done on the same frame as the start split, when a new game is started and the FMV is loaded in.
-	return current.mainMenu == 1 && current.newGame < old.newGame && current.lastVideoLoaded == "fmv1a.rmv";
+	// Probably unnecessary here but I'm using it to make sure none of this code is ran if it's not needed.
+	if (settings.ResetEnabled) {
+		// Done on the same frame as the start split, when a new game is started and the FMV is loaded in.
+		return current.mainMenu == 1 && current.newGame < old.newGame && current.lastVideoLoaded == "fmv1a.rmv";
+	}
 }
 
 isLoading
