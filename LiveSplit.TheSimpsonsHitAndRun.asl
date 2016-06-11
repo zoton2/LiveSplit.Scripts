@@ -1,3 +1,6 @@
+// Compatibility:
+// > This script works with the popular "FairLight" No-CD. It will check the user is using this before doing the update/start/reset/split/isLoading functions.
+
 // Bugs:
 // > Reset does not work after startup if no save file is loaded beforehand, either because the user has none
 //   or they use the "No Automatic Saved Game Load" mod in the mod launcher. Not a big issue though.
@@ -12,6 +15,11 @@
 //   still be able to go back to the correct mission and the split should still work from there on.
 
 state("Simpsons")
+{
+	// unknown/default version
+}
+
+state("Simpsons", "FairLight")
 {
 	// Some basic non-stat memory addresses are stored here.
 	int gameState : 0x2C9014, 0xC;  // Can be a few different numbers to do with the state the game is currently in.
@@ -387,10 +395,21 @@ init
 {
 	// After bootup, the timer is allowed to start if needed.
 	vars.canStart = true;
+	
+	// Version checking.
+	switch (modules.First().ModuleMemorySize)
+	{
+		case 2965504:
+			version = "FairLight";
+			break;
+	}
 }
 
 update
 {
+	if (version != "")
+		return false;
+	
 	// Update all of the memory readings for the stats.
 	vars.statWatchers.UpdateAll(game);
 	
@@ -411,6 +430,9 @@ update
 
 split
 {
+	if (version == "")
+		return false;
+	
 	vars.doSplit = false;
 	
 	// If the settings for the level we are currently on are activated.
@@ -499,20 +521,27 @@ split
 
 start
 {
+	if (version == "")
+		return false;
+	
 	// Done on the same frame as the reset, when a new game is started and the FMV is loaded in.
 	return vars.canStart && current.mainMenu == 1 && current.newGame == 0 && current.lastVideoLoaded == "fmv1a.rmv";
 }
 
 reset
 {
+	if (version == "")
+		return false;
+	
 	// Done on the same frame as the start split, when a new game is started and the FMV is loaded in.
 	return current.mainMenu == 1 && current.newGame < old.newGame && current.lastVideoLoaded == "fmv1a.rmv";
 }
 
 isLoading
 {
-	// Load removing for most loading screens in the game.
-	return current.gameState == 8
-	|| (current.gameState == 10 && current.notLoading == 0 && current.paused != 1)
-	|| (current.gameState == 2 && current.mainMenu == 0);
+	if (version != "")
+		// Load removing for most loading screens in the game.
+		return current.gameState == 8
+		|| (current.gameState == 10 && current.notLoading == 0 && current.paused != 1)
+		|| (current.gameState == 2 && current.mainMenu == 0);
 }
