@@ -28,12 +28,10 @@ state("Simpsons")
 
 startup
 {
-	// Declaring variables.
-	vars.coinGrindingDone = false;
-	vars.prevPhase = null;
-	
-	// A simple action to reset some variables in multiple parts of the script later.
+	// A simple action to reset some variables in the script later.
 	Action ResetVars = () => {
+		vars.canStart = false;
+		vars.coinGrindingDone = false;
 		vars.highestLevel = 0;
 		vars.highestMission = new int[7];
 	};
@@ -251,8 +249,8 @@ startup
 	settings.SetToolTip("coinGrinding", "Splits once you have more than 6200 coins and you're on \"Set to Kill\".");
 	
 	// Add the setting for picking up the bonus movie ticket.
-	settings.Add("BonusMovie", false, "Bonus Movie", "misc100%");
-	settings.SetToolTip("BonusMovie", "Splits when you pick up the ticket in the Android's Dungeon.");
+	settings.Add("bonusMovie", false, "Bonus Movie", "misc100%");
+	settings.SetToolTip("bonusMovie", "Splits when you pick up the ticket in the Android's Dungeon.");
 	
 	// Add the setting for a specific card. For Mango <3.
 	settings.Add("mangosCard", false, "Mango's Card (L5 Card 3)", "misc100%");
@@ -261,108 +259,260 @@ startup
 	// Add the setting for the final 100% split.
 	settings.Add("finalSplit100%", false, "100%", "misc100%");
 	settings.SetToolTip("finalSplit100%", "Splits after every goal towards 100% has been completed.");
+	
+	// Memory address pointers for all of the 100% stats in the game.
+	var statPointers = new Dictionary<int, string> {
+		{unchecked((int)0xFFFFFE28), "L1CollectorCards"},
+		{0x238, "L1Wasps"},
+		{0x24C, "L1Gags"},
+		{0x234, "L1CharacterClothing"},
+		{0x230, "L1Vehicles"},  // Doesn't count cars won.
+		{0x19C, "L1TimeTrial"},
+		{0x1BC, "L1CircuitRace"},
+		{0x1DC, "L1CheckpointRace"},
+		{0xBC, "L1M1"},
+		{0xDC, "L1M2"},
+		{0xFC, "L1M3"},
+		{0x11C, "L1M4"},
+		{0x13C, "L1M5"},
+		{0x15C, "L1M6"},
+		{0x17C, "L1M7"},
+		{0x1FC, "L1BM"},
+		{unchecked((int)0xFFFFFE48), "L2CollectorCards"},
+		{0x4A4, "L2Wasps"},
+		{0x4B8, "L2Gags"},
+		{0x4A0, "L2CharacterClothing"},
+		{0x49C, "L2Vehicles"},  // Doesn't count cars won.
+		{0x408, "L2TimeTrial"},
+		{0x428, "L2CircuitRace"},
+		{0x448, "L2CheckpointRace"},
+		{0x308, "L2M1"},
+		{0x328, "L2M2"},
+		{0x348, "L2M3"},
+		{0x368, "L2M4"},
+		{0x388, "L2M5"},
+		{0x3A8, "L2M6"},
+		{0x3C8, "L2M7"},
+		{0x468, "L2BM"},
+		{unchecked((int)0xFFFFFE68), "L3CollectorCards"},
+		{0x710, "L3Wasps"},
+		{0x724, "L3Gags"},
+		{0x70C, "L3CharacterClothing"},
+		{0x708, "L3Vehicles"},  // Doesn't count cars won.
+		{0x674, "L3TimeTrial"},
+		{0x694, "L3CircuitRace"},
+		{0x6B4, "L3CheckpointRace"},
+		{0x574, "L3M1"},
+		{0x594, "L3M2"},
+		{0x5B4, "L3M3"},
+		{0x5D4, "L3M4"},
+		{0x5F4, "L3M5"},
+		{0x614, "L3M6"},
+		{0x634, "L3M7"},
+		{0x6D4, "L3BM"},
+		{unchecked((int)0xFFFFFE88), "L4CollectorCards"},
+		{0x97C, "L4Wasps"},
+		{0x990, "L4Gags"},
+		{0x978, "L4CharacterClothing"},
+		{0x974, "L4Vehicles"},  // Doesn't count cars won.
+		{0x8E0, "L4TimeTrial"},
+		{0x900, "L4CircuitRace"},
+		{0x920, "L4CheckpointRace"},
+		{0x7E0, "L4M1"},
+		{0x800, "L4M2"},
+		{0x820, "L4M3"},
+		{0x840, "L4M4"},
+		{0x860, "L4M5"},
+		{0x880, "L4M6"},
+		{0x8A0, "L4M7"},
+		{0x940, "L4BM"},
+		{unchecked((int)0xFFFFFEA8), "L5CollectorCards"},
+		{0xBE8, "L5Wasps"},
+		{0xBFC, "L5Gags"},
+		{0xBE4, "L5CharacterClothing"},
+		{0xBE0, "L5Vehicles"},  // Doesn't count cars won.
+		{0xB4C, "L5TimeTrial"},
+		{0xB6C, "L5CircuitRace"},
+		{0xB8C, "L5CheckpointRace"},
+		{0xA4C, "L5M1"},
+		{0xA6C, "L5M2"},
+		{0xA8C, "L5M3"},
+		{0xAAC, "L5M4"},
+		{0xACC, "L5M5"},
+		{0xAEC, "L5M6"},
+		{0xB0C, "L5M7"},
+		{0xBAC, "L5BM"},
+		{unchecked((int)0xFFFFFEC8), "L6CollectorCards"},
+		{0xE54, "L6Wasps"},
+		{0xE68, "L6Gags"},
+		{0xE50, "L6CharacterClothing"},
+		{0xE4C, "L6Vehicles"},  // Doesn't count cars won.
+		{0xDB8, "L6TimeTrial"},
+		{0xDD8, "L6CircuitRace"},
+		{0xDF8, "L6CheckpointRace"},
+		{0xCB8, "L6M1"},
+		{0xCD8, "L6M2"},
+		{0xCF8, "L6M3"},
+		{0xD18, "L6M4"},
+		{0xD38, "L6M5"},
+		{0xD58, "L6M6"},
+		{0xD78, "L6M7"},
+		{0xE18, "L6BM"},
+		{unchecked((int)0xFFFFFEE8), "L7CollectorCards"},
+		{0x10C0, "L7Wasps"},
+		{0x10D4, "L7Gags"},
+		{0x10BC, "L7CharacterClothing"},
+		{0x10B8, "L7Vehicles"},  // Doesn't count cars won.
+		{0x1024, "L7TimeTrial"},
+		{0x1044, "L7CircuitRace"},
+		{0x1064, "L7CheckpointRace"},
+		{0xF24, "L7M1"},
+		{0xF44, "L7M2"},
+		{0xF64, "L7M3"},
+		{0xF84, "L7M4"},
+		{0xFA4, "L7M5"},
+		{0xFC4, "L7M6"},
+		{0xFE4, "L7M7"},
+		{0x1084, "L7BM"},
+		{0x704, "BonusMovie"}
+	};
+	
+	// Goes through the dictionary above and adds those pointers with the base address to the memory watcher list.
+	vars.statWatchers = new MemoryWatcherList();
+	foreach (var pointer in statPointers)
+		vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, pointer.Key)) { Name = pointer.Value });
 }
 
 init
 {
-	// Declaring variables and stuff.
+	// After bootup, the timer is allowed to start if needed.
 	vars.canStart = true;
-	vars.resetVariables();
 }
 
 update
 {
-	// Stores the curent phase the timer is in, so we can use the old one on the next frame.
-	current.timerPhase = timer.CurrentPhase;
+	// Update all of the memory readings for the stats.
+	vars.statWatchers.UpdateAll(game);
 	
 	// Checks if we have gotten into a new game (after the intro FMV) and if so toggles the variable on.
-	if (!vars.canStart && current.newGame > old.newGame) {vars.canStart = true;}
+	// For runs from a save, this should immediately toggle it from it's initial value of false back to true.
+	if (!vars.canStart && current.newGame == 1)
+		vars.canStart = true;
 	
 	// Reset some variables when the timer is started, so we don't need to rely on the start action in this script.
-	if (old.timerPhase != current.timerPhase && current.timerPhase == TimerPhase.Running) {
+	timer.OnStart += (s, e) => {
 		vars.resetVariables();
 		
 		// Store the currently set level/mission in case this is being done from a save.
 		vars.highestLevel = current.activeLevel;
 		vars.highestMission[current.activeLevel] = current.activeMission;
-	}
+	};
 }
 
 split
 {
-	// Probably unnecessary here but I'm using it to make sure none of this code is ran if it's not needed.
-	if (settings.SplitEnabled) {
-		vars.doSplit = false;
-		
-		// If the settings for the level we are currently on are activated.
-		if (settings["level"+(current.activeLevel+1)]) {
-			// If the current mission we're on is the one above the last recorded highest number and we're on the same level.
-			if (current.activeLevel == vars.highestLevel && current.activeMission == vars.highestMission[current.activeLevel]+1) {
-				// Level 1's mission numbers works slightly differently.
-				var onLevel1 = 0;
-				if (current.activeLevel == 0) {onLevel1 = 1;}
-				
-				// Store the actual level/mission number we need to check.
-				var levelNumber = current.activeLevel+1;
-				var missionNumber = current.activeMission-onLevel1;
-				
-				// If the setting for splitting the mission we just finished is set, split!
-				if (settings["L"+levelNumber+"M"+missionNumber]) {vars.doSplit = true;}
-				
-				// Store the mission we are now on as the highest mission.
-				vars.highestMission[current.activeLevel] = current.activeMission;
-			}
+	vars.doSplit = false;
+	
+	// If the settings for the level we are currently on are activated.
+	if (settings["level"+(current.activeLevel+1)]) {
+		// If the current mission we're on is the one above the last recorded highest number and we're on the same level.
+		if (current.activeLevel == vars.highestLevel && current.activeMission == vars.highestMission[current.activeLevel]+1) {
+			// Level 1's mission numbers works slightly differently.
+			var onLevel1 = 0; if (current.activeLevel == 0) {onLevel1 = 1;}
+			
+			// If the setting for splitting the mission we just finished is set, split!
+			if (settings["L"+(current.activeLevel+1)+"M"+(current.activeMission-onLevel1)])
+				vars.doSplit = true;
 		}
 		
-		// If we're past level 1 and the settings are activated for the previous level.
-		if (current.activeLevel > 0 && settings["level"+current.activeLevel]) {
-			// If we just moved a level higher and all of the missions have been done in the last level.
-			if (current.activeLevel == vars.highestLevel+1 && vars.highestMission[vars.highestLevel] >= 6) {
-				// If the setting for splitting the last mission on the level we just came from is set, split.
-				if (settings["L"+(current.activeLevel)+"M7"]) {vars.doSplit = true;}
-				
-				// Store the level we are now on as the highest level.
-				vars.highestLevel = current.activeLevel;
-			}
+		// If the 100% settings for the level we are currently on are activated.
+		if (settings["l"+(current.activeLevel+1)+"100%"]) {
+			// If the bonus mission in the current level is done.
+			if (settings["L"+(current.activeLevel+1)+"BM"]
+			&& vars.statWatchers["L"+(current.activeLevel+1)+"BM"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"BM"].Old)
+				vars.doSplit = true;
+			
+			// If the time trial in the current level is done.
+			if (settings["L"+(current.activeLevel+1)+"TimeTrial"]
+			&& vars.statWatchers["L"+(current.activeLevel+1)+"TimeTrial"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"TimeTrial"].Old)
+				vars.doSplit = true;
+			
+			// If the circuit race in the current level is done.
+			if (settings["L"+(current.activeLevel+1)+"CircuitRace"]
+			&& vars.statWatchers["L"+(current.activeLevel+1)+"CircuitRace"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"CircuitRace"].Old)
+				vars.doSplit = true;
+			
+			// If the checkpoint race in the current level is done.
+			if (settings["L"+(current.activeLevel+1)+"CheckpointRace"]
+			&& vars.statWatchers["L"+(current.activeLevel+1)+"CheckpointRace"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"CheckpointRace"].Old)
+				vars.doSplit = true;
 		}
-		
-		// Final split for most full-game categories.
-		if (settings["L7M7"] && vars.highestLevel == 6 && current.lastVideoLoaded == "fmv7.rmv" && current.videoPlaying == 1) {vars.doSplit = true;}
-		
-		// Coin grinding!
-		if (settings["coinGrinding"] && !vars.coinGrindingDone && current.activeLevel == 5 && current.activeMission == 5 && current.coinsTotal > 6200) {
-			vars.coinGrindingDone = true;
-			vars.doSplit = true;
-		}
-		
-		// If something in the code says we should split, then split.
-		if (vars.doSplit) {return true;}
 	}
+	
+	// If we're past level 1 and the settings are activated for the previous level.
+	if (current.activeLevel > 0 && settings["level"+current.activeLevel]) {
+		// If we just moved a level higher and all of the missions have been done in the last level.
+		if (current.activeLevel == vars.highestLevel+1 && vars.highestMission[vars.highestLevel] >= 6) {
+			// If the setting for splitting the last mission on the level we just came from is set, split.
+			if (settings["L"+(current.activeLevel)+"M7"])
+				vars.doSplit = true;
+		}
+	}
+	
+	// Store the mission/level we are now on as the highest mission/level
+	vars.highestMission[current.activeLevel] = current.activeMission;
+	vars.highestLevel = current.activeLevel;
+	
+	// Final split for most full-game categories, as soon as the final FMV starts.
+	if (settings["L7M7"] && vars.highestLevel == 6 && vars.highestMission[6] == 6 && current.lastVideoLoaded == "fmv7.rmv" && current.videoPlaying == 1)
+		vars.doSplit = true;
+	
+	// If the settings for the misc. 100% stuff are activated.
+	if (settings["misc100%"]) {
+		// Coin grinding! Splits once they have more than 6200 coins and on "Set to Kill".
+		if (settings["coinGrinding"] && !vars.coinGrindingDone && vars.highestLevel == 5 && vars.highestMission[5] == 5 && current.coinsTotal > 6200)
+			vars.coinGrindingDone = true; vars.doSplit = true;
+		
+		// Splits once the bonus movie ticket has been picked up.
+		if (settings["bonusMovie"] && vars.statWatchers["BonusMovie"].Current > vars.statWatchers["BonusMovie"].Old)
+			vars.doSplit = true;
+		
+		// A split for Mango to help with his splits because this was in his terrible script.
+		if (settings["mangosCard"] && vars.statWatchers["L5CollectorCards"].Old == 2 && vars.statWatchers["L5CollectorCards"].Current == 3)
+			vars.doSplit = true;
+		
+		// Final split for 100%, once all goals that count towards 100% are completed.
+		// While the game is booting (state 0) the values can be messed up so don't want to check then.
+		if (settings["finalSplit100%"] && current.gameState > 0) {
+			// Add the total objectives done together.
+			var total = ((MemoryWatcherList)vars.statWatchers).Sum(x => (byte)x.Current);
+			
+			// If all of the objectives have been done, split!
+			if (total == 393)
+				vars.doSplit = true;
+		}
+	}
+	
+	if (vars.doSplit)
+		return true;
 }
 
 start
 {
 	// Done on the same frame as the reset, when a new game is started and the FMV is loaded in.
-	if (vars.canStart && current.mainMenu == 1 && current.newGame == 0 && current.lastVideoLoaded == "fmv1a.rmv") {
-		// Resetting variables. This code needs to be triggered even if the user choses not to use the start split.
-		vars.canStart = false;
-		vars.coinGrindingDone = false;
-		vars.resetVariables();
-		
-		return true;
-	}
+	return vars.canStart && current.mainMenu == 1 && current.newGame == 0 && current.lastVideoLoaded == "fmv1a.rmv";
 }
 
 reset
 {
-	// Probably unnecessary here but I'm using it to make sure none of this code is ran if it's not needed.
-	if (settings.ResetEnabled) {
-		// Done on the same frame as the start split, when a new game is started and the FMV is loaded in.
-		return current.mainMenu == 1 && current.newGame < old.newGame && current.lastVideoLoaded == "fmv1a.rmv";
-	}
+	// Done on the same frame as the start split, when a new game is started and the FMV is loaded in.
+	return current.mainMenu == 1 && current.newGame < old.newGame && current.lastVideoLoaded == "fmv1a.rmv";
 }
 
 isLoading
 {
-	return current.gameState == 8 || (current.gameState == 10 && current.notLoading == 0 && current.paused != 1) || (current.gameState == 2 && current.mainMenu == 0);
+	// Load removing for most loading screens in the game.
+	return current.gameState == 8
+	|| (current.gameState == 10 && current.notLoading == 0 && current.paused != 1)
+	|| (current.gameState == 2 && current.mainMenu == 0);
 }
