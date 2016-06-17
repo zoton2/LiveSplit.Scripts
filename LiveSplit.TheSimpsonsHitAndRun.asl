@@ -1,11 +1,6 @@
 // Compatibility:
 // > This script works with the popular "FairLight" No-CD. It will check the user is using this before doing the update/start/reset/split/isLoading functions.
 
-// Bugs:
-// > Reset does not work after startup if no save file is loaded beforehand, either because the user has none
-//   or they use the "No Automatic Saved Game Load" mod in the mod launcher. Not a big issue though.
-//   > This bug happens because the newGame variable needs to change from 1 to 0.
-
 // Notes:
 // > Normal missions will split even if you don't complete them fully or are playing from a save file,
 //   so it works with NG+ and Any% as well.
@@ -36,15 +31,6 @@ state("Simpsons", "FairLight")
 
 startup
 {
-	// A simple action to reset some variables in the script later.
-	Action ResetVars = () => {
-		vars.canStart = false;
-		vars.coinGrindingDone = false;
-		vars.highestLevel = 0;
-		vars.highestMission = new int[7];
-	};
-	vars.resetVariables = ResetVars;
-	
 	// Level 1 settings.
 	settings.Add("level1", false, "Level 1");
 	settings.Add("L1M0", false, "0: The Cola Caper (Tutorial Mission)", "level1");
@@ -248,6 +234,8 @@ startup
 		settings.Add("L7Gag"+i, false, i.ToString(), "L7Gags");
 	}*/
 	settings.Add("L7BM", false, "Bonus Mission: Flaming Tires", "l7100%");
+	settings.Add("L7M7100%", false, "M7: Alien \"Auto\"topsy Part III (for 100%)", "l7100%");
+	settings.SetToolTip("L7M7100%", "Splits once the mission has been completed but before the final FMV starts playing.");
 	
 	// Add the header for misc. 100% stuff.
 	settings.Add("misc100%", false, "Miscellaneous 100% Stuff");
@@ -393,8 +381,9 @@ startup
 
 init
 {
-	// After bootup, the timer is allowed to start if needed.
-	vars.canStart = true;
+	// Declaring variables.
+	vars.canStart = true;  // The timer is allowed to start after the game has booted.
+	vars.justReset = false;  // Used to keep track of when the code triggers a reset.
 	
 	// Version checking.
 	switch (modules.First().ModuleMemorySize)
@@ -407,44 +396,70 @@ init
 
 update
 {
-	if (version != "")
+	// Disables all the action blocks below in the code if the user is using an unsupported version.
+	if (version == "")
 		return false;
+	
+	// Stores the curent phase the timer is in, so we can use the old one on the next frame.
+	current.timerPhase = timer.CurrentPhase;
 	
 	// Update all of the memory readings for the stats.
 	vars.statWatchers.UpdateAll(game);
 	
-	// Checks if we have gotten into a new game (after the intro FMV) and if so toggles the variable on.
-	// For runs from a save, this should immediately toggle it from it's initial value of false back to true.
-	if (!vars.canStart && current.newGame == 1)
-		vars.canStart = true;
-	
 	// Reset some variables when the timer is started, so we don't need to rely on the start action in this script.
-	timer.OnStart += (s, e) => {
-		vars.resetVariables();
+	if ((old.timerPhase != current.timerPhase || vars.justReset) && current.timerPhase == TimerPhase.Running) {
+		// Resetting/changing variables.
+		vars.justReset = false;
+		vars.canStart = false;
+		vars.coinGrindingDone = false;
+		vars.highestLevel = 0;
+		vars.highestMission = new int[7];
 		
 		// Store the currently set level/mission in case this is being done from a save.
 		vars.highestLevel = current.activeLevel;
 		vars.highestMission[current.activeLevel] = current.activeMission;
-	};
+	}
+	
+	// Allows the timer to start automatically again when it won't cause issues.
+	if (!vars.canStart && current.newGame == 1)
+		vars.canStart = true;
 }
 
 split
 {
-	if (version == "")
-		return false;
-	
 	vars.doSplit = false;
 	
-	// If the settings for the level we are currently on are activated.
-	if (settings["level"+(current.activeLevel+1)]) {
+	// While the game is booting (state 0) the 100% values can be messed up so don't want to check then.
+	if (current.gameState > 0) {
 		// If the current mission we're on is the one above the last recorded highest number and we're on the same level.
 		if (current.activeLevel == vars.highestLevel && current.activeMission == vars.highestMission[current.activeLevel]+1) {
-			// Level 1's mission numbers works slightly differently.
-			var onLevel1 = 0; if (current.activeLevel == 0) {onLevel1 = 1;}
+			// If the settings for the level we are currently on are activated.
+			if (settings["level"+(current.activeLevel+1)]) {
+				// Level 1's mission numbers works slightly differently.
+				var onLevel1 = 0;
+				if (current.activeLevel == 0)
+					onLevel1 = 1;
+				
+				// If the setting for splitting the mission we just finished is set, split!
+				if (settings["L"+(current.activeLevel+1)+"M"+(current.activeMission-onLevel1)])
+					vars.doSplit = true;
+			}
 			
-			// If the setting for splitting the mission we just finished is set, split!
-			if (settings["L"+(current.activeLevel+1)+"M"+(current.activeMission-onLevel1)])
-				vars.doSplit = true;
+			// Store the mission we are now on as the highest mission/level
+			vars.highestMission[current.activeLevel] = current.activeMission;
+		}
+		
+		// If we're past level 1 and the settings are activated for the previous level.
+		if (current.activeLevel > 0) {
+			// If we just moved a level higher and all of the missions have been done in the last level.
+			if (current.activeLevel == vars.highestLevel+1 && vars.highestMission[vars.highestLevel] >= 6) {
+				// If the setting for splitting the last mission on the level we just came from is set, split.
+				if (settings["level"+current.activeLevel] && settings["L"+(current.activeLevel)+"M7"])
+					vars.doSplit = true;
+				
+				// Store the level we are now on as the highest mission/level
+				vars.highestLevel = current.activeLevel;
+			}
 		}
 		
 		// If the 100% settings for the level we are currently on are activated.
@@ -454,64 +469,57 @@ split
 			&& vars.statWatchers["L"+(current.activeLevel+1)+"BM"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"BM"].Old)
 				vars.doSplit = true;
 			
-			// If the time trial in the current level is done.
-			if (settings["L"+(current.activeLevel+1)+"TimeTrial"]
-			&& vars.statWatchers["L"+(current.activeLevel+1)+"TimeTrial"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"TimeTrial"].Old)
-				vars.doSplit = true;
-			
-			// If the circuit race in the current level is done.
-			if (settings["L"+(current.activeLevel+1)+"CircuitRace"]
-			&& vars.statWatchers["L"+(current.activeLevel+1)+"CircuitRace"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"CircuitRace"].Old)
-				vars.doSplit = true;
-			
-			// If the checkpoint race in the current level is done.
-			if (settings["L"+(current.activeLevel+1)+"CheckpointRace"]
-			&& vars.statWatchers["L"+(current.activeLevel+1)+"CheckpointRace"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"CheckpointRace"].Old)
-				vars.doSplit = true;
+			// If the settings for the races are activated.
+			if (settings["L"+(current.activeLevel+1)+"Races"]) {
+				// If the time trial in the current level is done.
+				if (settings["L"+(current.activeLevel+1)+"TimeTrial"]
+				&& vars.statWatchers["L"+(current.activeLevel+1)+"TimeTrial"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"TimeTrial"].Old)
+					vars.doSplit = true;
+				
+				// If the circuit race in the current level is done.
+				if (settings["L"+(current.activeLevel+1)+"CircuitRace"]
+				&& vars.statWatchers["L"+(current.activeLevel+1)+"CircuitRace"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"CircuitRace"].Old)
+					vars.doSplit = true;
+				
+				// If the checkpoint race in the current level is done.
+				if (settings["L"+(current.activeLevel+1)+"CheckpointRace"]
+				&& vars.statWatchers["L"+(current.activeLevel+1)+"CheckpointRace"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"CheckpointRace"].Old)
+					vars.doSplit = true;
+			}
 		}
-	}
-	
-	// If we're past level 1 and the settings are activated for the previous level.
-	if (current.activeLevel > 0 && settings["level"+current.activeLevel]) {
-		// If we just moved a level higher and all of the missions have been done in the last level.
-		if (current.activeLevel == vars.highestLevel+1 && vars.highestMission[vars.highestLevel] >= 6) {
-			// If the setting for splitting the last mission on the level we just came from is set, split.
-			if (settings["L"+(current.activeLevel)+"M7"])
-				vars.doSplit = true;
-		}
-	}
-	
-	// Store the mission/level we are now on as the highest mission/level
-	vars.highestMission[current.activeLevel] = current.activeMission;
-	vars.highestLevel = current.activeLevel;
-	
-	// Final split for most full-game categories, as soon as the final FMV starts.
-	if (settings["L7M7"] && vars.highestLevel == 6 && vars.highestMission[6] == 6 && current.lastVideoLoaded == "fmv7.rmv" && current.videoPlaying == 1)
-		vars.doSplit = true;
-	
-	// If the settings for the misc. 100% stuff are activated.
-	if (settings["misc100%"]) {
-		// Coin grinding! Splits once they have more than 6200 coins and on "Set to Kill".
-		if (settings["coinGrinding"] && !vars.coinGrindingDone && vars.highestLevel == 5 && vars.highestMission[5] == 5 && current.coinsTotal > 6200)
-			vars.coinGrindingDone = true; vars.doSplit = true;
 		
-		// Splits once the bonus movie ticket has been picked up.
-		if (settings["bonusMovie"] && vars.statWatchers["BonusMovie"].Current > vars.statWatchers["BonusMovie"].Old)
+		// Final split for most full-game categories, as soon as the final FMV starts.
+		if (settings["L7M7"] && vars.highestLevel == 6 && vars.highestMission[6] == 6 && current.lastVideoLoaded == "fmv7.rmv" && current.videoPlaying == 1)
 			vars.doSplit = true;
 		
-		// A split for Mango to help with his splits because this was in his terrible script.
-		if (settings["mangosCard"] && vars.statWatchers["L5CollectorCards"].Old == 2 && vars.statWatchers["L5CollectorCards"].Current == 3)
+		// Split for L7M7, but for after the mission is completed but before the final FMV starts. Could be used for 100% runs if needed.
+		if (settings["L7M7100%"] && vars.statWatchers["L7M7"].Current > vars.statWatchers["L7M7"].Old)
 			vars.doSplit = true;
 		
-		// Final split for 100%, once all goals that count towards 100% are completed.
-		// While the game is booting (state 0) the values can be messed up so don't want to check then.
-		if (settings["finalSplit100%"] && current.gameState > 0) {
-			// Add the total objectives done together.
-			var total = ((MemoryWatcherList)vars.statWatchers).Sum(x => (byte)x.Current);
+		// If the settings for the misc. 100% stuff are activated.
+		if (settings["misc100%"]) {
+			// Coin grinding! Splits once they have more than 6200 coins and on "Set to Kill".
+			if (settings["coinGrinding"] && !vars.coinGrindingDone && vars.highestLevel == 5 && vars.highestMission[5] == 5 && current.coinsTotal > 6200) {
+				vars.coinGrindingDone = true; vars.doSplit = true;
+			}
 			
-			// If all of the objectives have been done, split!
-			if (total == 393)
+			// Splits once the bonus movie ticket has been picked up.
+			if (settings["bonusMovie"] && vars.statWatchers["BonusMovie"].Current > vars.statWatchers["BonusMovie"].Old)
 				vars.doSplit = true;
+			
+			// A split for Mango to help with his splits because this was in his terrible script.
+			if (settings["mangosCard"] && vars.statWatchers["L5CollectorCards"].Old == 2 && vars.statWatchers["L5CollectorCards"].Current == 3)
+				vars.doSplit = true;
+			
+			// Final split for 100%, once all goals that count towards 100% are completed.
+			if (settings["finalSplit100%"]) {
+				// Add the total objectives done together.
+				var total = ((MemoryWatcherList)vars.statWatchers).Sum(x => (byte)x.Current);
+				
+				// If all of the objectives have been done, split!
+				if (total == 393)
+					vars.doSplit = true;
+			}
 		}
 	}
 	
@@ -521,27 +529,22 @@ split
 
 start
 {
-	if (version == "")
-		return false;
-	
 	// Done on the same frame as the reset, when a new game is started and the FMV is loaded in.
-	return vars.canStart && current.mainMenu == 1 && current.newGame == 0 && current.lastVideoLoaded == "fmv1a.rmv";
+	return vars.canStart && current.newGame == 0 && current.mainMenu == 1 && current.lastVideoLoaded == "fmv1a.rmv";
 }
 
 reset
 {
-	if (version == "")
-		return false;
-	
 	// Done on the same frame as the start split, when a new game is started and the FMV is loaded in.
-	return current.mainMenu == 1 && current.newGame < old.newGame && current.lastVideoLoaded == "fmv1a.rmv";
+	if (old.newGame > current.newGame && current.mainMenu == 1 && current.lastVideoLoaded == "fmv1a.rmv") {
+		vars.justReset = true; return true;
+	}
 }
 
 isLoading
 {
-	if (version != "")
-		// Load removing for most loading screens in the game.
-		return current.gameState == 8
-		|| (current.gameState == 10 && current.notLoading == 0 && current.paused != 1)
-		|| (current.gameState == 2 && current.mainMenu == 0);
+	// Load removing for most loading screens in the game.
+	return current.gameState == 8
+	|| (current.gameState == 10 && current.notLoading == 0 && current.paused != 1)
+	|| (current.gameState == 2 && current.mainMenu == 0);
 }
