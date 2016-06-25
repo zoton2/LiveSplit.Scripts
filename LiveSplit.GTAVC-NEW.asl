@@ -7,7 +7,7 @@ state("gta-vc", "1.0")
 {
 	int islandLoad : 0x305310;
 	int loadSaveLoad : 0x38D724;
-    int replayLoad : 0x38A72C;
+	int replayLoad : 0x38A72C;
 	byte genLoad : 0x2F7759;
 }
 
@@ -15,7 +15,7 @@ state("gta-vc", "1.1")
 {
 	int islandLoad : 0x305310;
 	int loadSaveLoad : 0x38D72C;
-    int replayLoad : 0x38A72C;
+	int replayLoad : 0x38A72C;
 	byte genLoad : 0x2F7759;
 }
 
@@ -23,7 +23,7 @@ state("gta-vc", "Steam")
 {
 	int islandLoad : 0x304310;
 	int loadSaveLoad : 0x38E71C;
-    int replayLoad : 0x389734;
+	int replayLoad : 0x389734;
 	byte genLoad : 0x2F6759;
 }
 
@@ -33,7 +33,7 @@ state("gta-vc", "Japanese")
 {
 	int islandLoad : 0x302310;
 	int loadSaveLoad : 0x38A72C;
-    int replayLoad : 0x387734;
+	int replayLoad : 0x387734;
 	byte genLoad : 0x2F4759;
 }
 
@@ -100,6 +100,7 @@ startup
 		{0x421BFC, "Checkpoint Charlie"}
 	};
 	
+	settings.Add("OMFSplit", false, "Split on Start of Next Mission");
 	settings.Add("Missions", false, "Missions");
 	
 	// Adds missions to the settings and also to a separate list for easier checking later.
@@ -109,6 +110,7 @@ startup
 		vars.missionList.Add(address.Value);
 	}
 	
+	// Setting for final split of Any%.
 	settings.Add("btgFinalSplit", false, "Any% Final Split");
 	settings.SetToolTip("btgFinalSplit", "Splits once you lose control on \"Keep Your Friends Close\".");
 }
@@ -164,6 +166,24 @@ init
 	vars.memoryWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x426104+vars.offset)) { Name = "kyfc1" });
 	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x425DAC+vars.offset)) { Name = "kyfc2" });
 	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x426100+vars.offset)) { Name = "kyfc3" });
+	
+	// A list of names and memory addresses for OMFs, both the main one and ones for side missions and such.
+	vars.OMFList = new List<string> {"OMFParamedic", "OMFFirefighter", "OMFTaxi", "OMFRampage", "OMFPhonecall"};
+	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x421764+vars.offset)) { Name = "OMF" });
+	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x42177C+vars.offset)) { Name = "OMFParamedic" });
+	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x421784+vars.offset)) { Name = "OMFFirefighter" });
+	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x421768+vars.offset)) { Name = "OMFTaxi" });
+	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x3E2B2C+vars.offset)) { Name = "OMFRampage" });
+	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x4224F0+vars.offset)) { Name = "OMFPhonecall" });
+	
+	// This address will be 0 if vigilante is currently running or it was never started, or 1 if started once and not running.
+	var OMFVigilanteAddress = (version == "Japanese") ? 0x424E68 : 0x427E58+vars.offset;
+	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(OMFVigilanteAddress)) { Name = "OMFVigilante" });
+	
+	// This address will be 0 if vigilante has never been started, -100 on start and then a high number that decreases while on vigilante.
+	// The high number will then freeze if vigilante is cancelled.
+	var VigilanteTimerAddress = (version == "Japanese") ? 0x424E60 : 0x427E50+vars.offset;
+	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(VigilanteTimerAddress)) { Name = "VigilanteTimer" });
 }
 
 update
@@ -181,6 +201,7 @@ update
 	// Reset some variables when the timer is started, so we don't need to rely on the start action in this script.
 	if (old.timerPhase != current.timerPhase && current.timerPhase == TimerPhase.Running) {
 		vars.split.Clear();
+		vars.queuedSplit = false;
 	}
 }
 
@@ -192,7 +213,33 @@ split
 	// and also if we haven't split for this mission yet. If so, splits.
 	foreach (var mission in vars.missionList) {
 		if (settings[mission] && vars.memoryWatchers[mission].Current > vars.memoryWatchers[mission].Old && !vars.split.Contains(mission)) {
-			vars.doSplit = true; vars.split.Add(mission);
+			vars.split.Add(mission);
+			
+			// If the relevant setting is active, queues up the split to be done at a later time; if not, just splits now.
+			if (settings["OMFSplit"])
+				vars.queuedSplit = true;
+			else
+				vars.doSplit = true;
+		}
+	}
+	
+	// If there is a queued split and the OMF has changed to 1, then check to see if we should split now or not.
+	if (settings["OMFSplit"] && vars.queuedSplit && vars.memoryWatchers["OMF"].Current > vars.memoryWatchers["OMF"].Old) {
+		vars.sideMissionOM = false;
+		
+		// Checks to see if the OMF change wasn't that of a side mission or similar.
+		foreach (var sideMissionOMF in vars.OMFList) {
+			if (vars.memoryWatchers[sideMissionOMF].Current > vars.memoryWatchers[sideMissionOMF].Old)
+				vars.sideMissionOM = true;
+		}
+		
+		// Vigilante requires a special check because of the way the addresses work.
+		if (vars.memoryWatchers["OMFVigilante"].Current < vars.memoryWatchers["OMFVigilante"].Old || (vars.memoryWatchers["VigilanteTimer"].Current == -100 && vars.memoryWatchers["VigilanteTimer"].Old != -100))
+			vars.sideMissionOM = true;
+		
+		// If the checks above returned nothing, then we will split.
+		if (!vars.sideMissionOM) {
+			vars.doSplit = true; vars.queuedSplit = false;
 		}
 	}
 	
