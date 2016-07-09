@@ -1,3 +1,7 @@
+// OMF stuff to check:
+// does buying a property set OMF to 1?
+// OMF checking for rampage and vigilante doesn't work
+
 state("gta-vc")
 {
 	byte gameVersion : 0x208578;  // Used to detect the version (works for all versions beside Steam).
@@ -168,13 +172,14 @@ init
 	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x426100+vars.offset)) { Name = "kyfc3" });
 	
 	// A list of names and memory addresses for OMFs, both the main one and ones for side missions and such.
-	vars.OMFList = new List<string> {"OMFParamedic", "OMFFirefighter", "OMFTaxi", "OMFRampage", "OMFPhonecall"};
+	vars.OMFList = new List<string> {"OMFParamedic", "OMFFirefighter", "OMFTaxi", "OMFRampage", "OMFPhonecall", "OMFSaveGame"};
 	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x421764+vars.offset)) { Name = "OMF" });
 	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x42177C+vars.offset)) { Name = "OMFParamedic" });
 	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x421784+vars.offset)) { Name = "OMFFirefighter" });
 	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x421768+vars.offset)) { Name = "OMFTaxi" });
 	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x3E2B2C+vars.offset)) { Name = "OMFRampage" });
 	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x4224F0+vars.offset)) { Name = "OMFPhonecall" });
+	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x60D228+vars.offset)) { Name = "OMFSaveGame" });
 	
 	// This address will be 0 if vigilante is currently running or it was never started, or 1 if started once and not running.
 	var OMFVigilanteAddress = (version == "Japanese") ? 0x424E68 : 0x427E58+vars.offset;
@@ -199,7 +204,7 @@ update
 	vars.memoryWatchers.UpdateAll(game);
 	
 	// Reset some variables when the timer is started, so we don't need to rely on the start action in this script.
-	if (old.timerPhase != current.timerPhase && current.timerPhase == TimerPhase.Running) {
+	if ((old.timerPhase != current.timerPhase && old.timerPhase != TimerPhase.Paused) && current.timerPhase == TimerPhase.Running) {
 		vars.split.Clear();
 		vars.queuedSplit = false;
 	}
@@ -229,13 +234,18 @@ split
 		
 		// Checks to see if the OMF change wasn't that of a side mission or similar.
 		foreach (var sideMissionOMF in vars.OMFList) {
-			if (vars.memoryWatchers[sideMissionOMF].Current > vars.memoryWatchers[sideMissionOMF].Old)
+			if (vars.memoryWatchers[sideMissionOMF].Current > vars.memoryWatchers[sideMissionOMF].Old) {
 				vars.sideMissionOM = true;
+				print("skipping split because side mission");
+			}
 		}
 		
 		// Vigilante requires a special check because of the way the addresses work.
-		if (vars.memoryWatchers["OMFVigilante"].Current < vars.memoryWatchers["OMFVigilante"].Old || (vars.memoryWatchers["VigilanteTimer"].Current == -100 && vars.memoryWatchers["VigilanteTimer"].Old != -100))
+		if (vars.memoryWatchers["OMFVigilante"].Current < vars.memoryWatchers["OMFVigilante"].Old
+			|| (vars.memoryWatchers["VigilanteTimer"].Current == -100 && vars.memoryWatchers["VigilanteTimer"].Old != -100)) {
 			vars.sideMissionOM = true;
+			print("skipping split because side mission");
+		}
 		
 		// If the checks above returned nothing, then we will split.
 		if (!vars.sideMissionOM) {

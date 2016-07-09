@@ -16,7 +16,7 @@ update
 	current.timerPhase = timer.CurrentPhase;
 	
 	// Reset some variables when the timer is started.
-	if (old.timerPhase != current.timerPhase && current.timerPhase == TimerPhase.Running) {
+	if ((old.timerPhase != current.timerPhase && old.timerPhase != TimerPhase.Paused) && current.timerPhase == TimerPhase.Running) {
 		vars.missionCount = 0;
 	}
 	

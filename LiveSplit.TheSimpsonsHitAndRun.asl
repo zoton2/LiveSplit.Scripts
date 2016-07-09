@@ -407,7 +407,7 @@ update
 	vars.statWatchers.UpdateAll(game);
 	
 	// Reset some variables when the timer is started, so we don't need to rely on the start action in this script.
-	if ((old.timerPhase != current.timerPhase || vars.justReset) && current.timerPhase == TimerPhase.Running) {
+	if (((old.timerPhase != current.timerPhase && old.timerPhase != TimerPhase.Paused) || vars.justReset) && current.timerPhase == TimerPhase.Running) {
 		// Resetting/changing variables.
 		vars.justReset = false;
 		vars.canStart = false;
