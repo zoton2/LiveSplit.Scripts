@@ -80,6 +80,11 @@ state("GTA5", "Steam7572")
 	int loading : 0x223FCF0;
 }
 
+state("GTA5", "RGSC7912")
+{
+	int loading : 0x22486F0;
+}
+
 init
 {
 	switch (modules.First().ModuleMemorySize)
@@ -130,6 +135,9 @@ init
 		case 68645888:
 		case 68562944: // hotfix (757.4)
 			version = "Steam7572";
+			break;
+		case 68791808:
+			version = "RGSC7912"
 			break;
 	}
 }
