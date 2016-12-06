@@ -11,12 +11,14 @@ state("WatchDogs2")
 
 state("WatchDogs2", "v1.05.134")
 {
-	int loading : "Disrupt_64.dll", 0x3D59E34;
+	int loading1 : "Disrupt_64.dll", 0x3D59E34;
+	int loading2 : "Disrupt_64.dll", 0x3D061CC;
 }
 
 state("WatchDogs2", "v1.06.135.3")
 {
-	int loading : "Disrupt_64.dll", 0x3D591E4;
+	int loading1 : "Disrupt_64.dll", 0x3D591E4;
+	int loading2 : "Disrupt_64.dll", 0x3D0550C;
 }
 
 init
@@ -35,5 +37,5 @@ init
 isLoading
 {
 	if (version != "")
-		return current.loading > 0;
+		return current.loading1 > 0 || current.loading2 > 0;
 }
