@@ -22,6 +22,12 @@ state("WatchDogs2", "v1.06.135.3.982778")
 	int loading2 : "Disrupt_64.dll", 0x3D0550C;
 }
 
+state("WatchDogs2", "v1.06.135.7.982778")
+{
+	int loading1 : "Disrupt_64.dll", 0x3D56984;
+	int loading2 : "Disrupt_64.dll", 0x3D02B84;
+}
+
 init
 {
 	switch (modules.FirstOrDefault(m => m.ModuleName.ToLower() == "disrupt_64.dll").ModuleMemorySize)
@@ -31,6 +37,9 @@ init
 			break;
 		case 188690432:
 			version = "v1.06.135.3.982778";
+			break;
+		case 195903488:
+			version = "v1.06.135.7.982778";
 			break;
 	}
 }

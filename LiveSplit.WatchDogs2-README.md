@@ -13,3 +13,4 @@
 This load remover *should* work for copies bought from any storefront. Your current version is visible in the main menu and the pause menu. I advise you disable automatic updating of your game if possible, because new versions will not be supported straight away.
 - v1.05.134.981608
 - v1.06.135.3.982778
+- v1.06.135.7.982778
