@@ -14,3 +14,5 @@ This load remover *should* work for copies bought from any storefront. Your curr
 - v1.06.135.3.982778
 - v1.06.135.7.982778
 - v1.07.141.6.988937
+- v1.09.152.2.996015
+- v1.09.154.1001103
