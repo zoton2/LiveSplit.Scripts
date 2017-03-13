@@ -5,7 +5,7 @@ state("maxpayne")
 
 state("maxpayne", "Steam")
 {
-	int loading : 0x46B994, 0x48, 0xB4;
+	int loading : 0x4A6400, 0x80, 0xB4;
 	int comic : "e2mfc.dll", 0x651DC;
 }
 
