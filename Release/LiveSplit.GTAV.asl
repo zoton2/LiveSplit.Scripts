@@ -145,7 +145,7 @@ init
 			version = "Steam7572";
 			break;
 		case 68791808:
-			version = "RGSC7912"
+			version = "RGSC7912";
 			break;
 	}
 }
