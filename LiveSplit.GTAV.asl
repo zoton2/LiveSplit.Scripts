@@ -8,6 +8,11 @@ state("GTA5", "RGSC3722")
 	int loading : 0x2153C30;
 }
 
+state("GTA5", "Steam3722")
+{
+	int loading : 0x2157FA0;
+}
+
 state("GTA5", "RGSC3934")
 {
 	int loading : 0x21C94C0;
@@ -91,6 +96,9 @@ init
 	{
 		case 70718464:
 			version = "RGSC3722";
+			break;
+		case 70635008:
+			version = "Steam3722";
 			break;
 		case 70944768:
 			version = "RGSC3934";
