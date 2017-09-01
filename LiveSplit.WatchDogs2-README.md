@@ -18,3 +18,4 @@ This load remover *should* work for copies bought from any storefront. Your curr
 - v1.09.154.1001103
 - v1.011.174.3.1009368
 - v1.011.174.6.1009368
+- v1.017.189.2.1088394 ([final patch?](https://www.reddit.com/r/watch_dogs/comments/6r7vbr/title_update_117_bug_fix_patch_notes/))
