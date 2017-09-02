@@ -104,7 +104,7 @@ startup
 		{0x421BFC, "Checkpoint Charlie"}
 	};
 	
-	settings.Add("OMFSplit", false, "Split on Start of Next Mission");
+	settings.Add("OMFSplit", false, "Split on Start of Next Mission (experimental)");
 	settings.Add("Missions", false, "Missions");
 	
 	// Adds missions to the settings and also to a separate list for easier checking later.
