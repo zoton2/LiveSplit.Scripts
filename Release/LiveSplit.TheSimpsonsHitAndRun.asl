@@ -11,10 +11,13 @@
 
 state("Simpsons")
 {
-	// unknown/default version
+	// A horrible way to check, but hopefully only temporary.
+	// If you are playing on the English version, this is "american".
+	// (No, this is not the language, but the string of a costume in the game.)
+	string8 verCheck : 0x24AB28;
 }
 
-state("Simpsons", "FairLight")
+state("Simpsons", "FairLightENG")
 {
 	// Some basic non-stat memory addresses are stored here.
 	int gameState : 0x2C9014, 0xC;  // Can be a few different numbers to do with the state the game is currently in.
@@ -27,6 +30,21 @@ state("Simpsons", "FairLight")
 	int coinsTotal : 0x2C8984, 0x111C;  // L O D S of E M O N E, what's that spell? Loadsamoney! (probably)
 	int activeMission : 0x2C8984, 0x110C;  // 0-6 (or 0-7 on level 1 cuz tutorial); doesn't change for bonus missions/races.
 	int activeLevel : 0x2C8984, 0x1108;  // 0-6 depending on what level you are on.
+}
+
+state("Simpsons", "FairLightGER")
+{
+	// Some basic non-stat memory addresses are stored here.
+	int gameState : 0x2C8FD4, 0xC;  // Can be a few different numbers to do with the state the game is currently in.
+	int notLoading : 0x2C8FD8, 0x1D58;  // 0 if loading, 1 if not.
+	int paused : 0x2C83E8, 0x18;  // If in the pause menu or not.
+	int mainMenu : 0x2C8FD8, 0x1A18;  // If on the main menu or not.
+	string11 lastVideoLoaded : 0x2C8940, 0x54, 0x14, 0xF;  // File name of the last video file the game loaded.
+	int videoPlaying : "binkw32.dll", 0x6521C;  // If a video is currently playing or not.
+	int newGame : 0x2C83EC, 0x6C;  // Turns to 0 when a new game is started and changes to 1 when the first level is loaded.
+	int coinsTotal : 0x2C8944, 0x111C;  // L O D S of E M O N E, what's that spell? Loadsamoney! (probably)
+	int activeMission : 0x2C8944, 0x110C;  // 0-6 (or 0-7 on level 1 cuz tutorial); doesn't change for bonus missions/races.
+	int activeLevel : 0x2C8944, 0x1108;  // 0-6 depending on what level you are on.
 }
 
 startup
@@ -257,7 +275,7 @@ startup
 	settings.SetToolTip("finalSplit100%", "Splits after every goal towards 100% has been completed.");
 	
 	// Memory address pointers for all of the 100% stats in the game.
-	var statPointers = new Dictionary<int, string> {
+	vars.statPointers = new Dictionary<int, string> {
 		{unchecked((int)0xFFFFFE28), "L1CollectorCards"},
 		{0x238, "L1Wasps"},
 		{0x24C, "L1Gags"},
@@ -372,11 +390,6 @@ startup
 		{0x1084, "L7BM"},
 		{0x704, "BonusMovie"}
 	};
-	
-	// Goes through the dictionary above and adds those pointers with the base address to the memory watcher list.
-	vars.statWatchers = new MemoryWatcherList();
-	foreach (var pointer in statPointers)
-		vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, pointer.Key)) { Name = pointer.Value });
 }
 
 init
@@ -389,8 +402,20 @@ init
 	switch (modules.First().ModuleMemorySize)
 	{
 		case 2965504:
-			version = "FairLight";
+			if (current.verCheck == "american")
+				version = "FairLightENG";
+			else
+				version = "FairLightGER";
 			break;
+	}
+	
+	// Goes through the dictionary in "startup" and adds those pointers with the base address to the memory watcher list.
+	vars.statWatchers = new MemoryWatcherList();
+	foreach (var pointer in vars.statPointers) {
+		if (version == "FairLightGER")
+			vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8944, pointer.Key)) { Name = pointer.Value });
+		else
+			vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, pointer.Key)) { Name = pointer.Value });
 	}
 }
 
