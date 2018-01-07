@@ -135,6 +135,14 @@ startup
 	for (var i = 1; i <= 11; i++) {
 		settings.Add("L3Gag"+i, false, i.ToString(), "L3Gags");
 	}*/
+	settings.Add("L3M2100%", false, "M2: Clueless (for 100%)", "l3100%");
+	settings.SetToolTip("L3M2100%",
+		@"Splits once the mission has actually been fully completed;
+only use this if your route involves initially skippping this mission.");
+	settings.Add("L3M7100%", false, "M7: The Old Pirate and the Sea (for 100%)", "l3100%");
+	settings.SetToolTip("L3M7100%",
+		@"Splits once the mission has actually been fully completed;
+only use this if your route involves initially skippping this mission.");
 	settings.Add("L3BM", false, "Bonus Mission: Princi-Pal", "l3100%");
 	
 	// Level 4 settings.
@@ -253,7 +261,9 @@ startup
 	}*/
 	settings.Add("L7BM", false, "Bonus Mission: Flaming Tires", "l7100%");
 	settings.Add("L7M7100%", false, "M7: Alien \"Auto\"topsy Part III (for 100%)", "l7100%");
-	settings.SetToolTip("L7M7100%", "Splits once the mission has been completed but before the final FMV starts playing.");
+	settings.SetToolTip("L7M7100%",
+		@"Splits once the mission has been completed but before the final FMV starts playing;
+use this one instead of the one above for 100%.");
 	
 	// Add the header for misc. 100% stuff.
 	settings.Add("misc100%", false, "Miscellaneous 100% Stuff");
@@ -487,8 +497,8 @@ split
 			}
 		}
 		
-		// If the 100% settings for the level we are currently on are activated.
-		if (settings["l"+(current.activeLevel+1)+"100%"]) {
+		// If the normal settings and the 100% settings for the level we are currently on are activated.
+		if (settings["level"+(current.activeLevel+1)] && settings["l"+(current.activeLevel+1)+"100%"]) {
 			// If the bonus mission in the current level is done.
 			if (settings["L"+(current.activeLevel+1)+"BM"]
 			&& vars.statWatchers["L"+(current.activeLevel+1)+"BM"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"BM"].Old)
@@ -511,14 +521,31 @@ split
 				&& vars.statWatchers["L"+(current.activeLevel+1)+"CheckpointRace"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"CheckpointRace"].Old)
 					vars.doSplit = true;
 			}
+			
+			// Some unique things for 100% in level 3.
+			if (current.activeLevel+1 == 3) {
+				// Split when Clueless is actually completed.
+				if (settings["L3M2100%"]
+				&& vars.statWatchers["L3M2"].Current > vars.statWatchers["L3M2"].Old)
+					vars.doSplit = true;
+				
+				// Split when The Old Pirate and the Sea is actually completed.
+				if (settings["L3M7100%"]
+				&& vars.statWatchers["L3M7"].Current > vars.statWatchers["L3M7"].Old)
+					vars.doSplit = true;
+			}
+			
+			// Some unique things for 100% in level 7.
+			if (current.activeLevel+1 == 7) {
+				// Split for L7M7, but for after the mission is completed but before the final FMV starts. Could be used for 100% runs if needed.
+				if (settings["L7M7100%"]
+				&& vars.statWatchers["L7M7"].Current > vars.statWatchers["L7M7"].Old)
+					vars.doSplit = true;
+			}
 		}
 		
 		// Final split for most full-game categories, as soon as the final FMV starts.
 		if (settings["L7M7"] && vars.highestLevel == 6 && vars.highestMission[6] == 6 && current.lastVideoLoaded == "fmv7.rmv" && current.videoPlaying == 1)
-			vars.doSplit = true;
-		
-		// Split for L7M7, but for after the mission is completed but before the final FMV starts. Could be used for 100% runs if needed.
-		if (settings["L7M7100%"] && vars.statWatchers["L7M7"].Current > vars.statWatchers["L7M7"].Old)
 			vars.doSplit = true;
 		
 		// If the settings for the misc. 100% stuff are activated.
