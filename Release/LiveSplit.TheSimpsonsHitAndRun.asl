@@ -1,5 +1,5 @@
 // Compatibility:
-// > This script works with the popular "FairLight" No-CD. It will check the user is using this before doing the update/start/reset/split/isLoading functions.
+// > This script works with the popular "FairLight" No-CD (and also the German version by the same group). It will check the user is using this before doing the update/start/reset/split/isLoading functions.
 
 // Notes:
 // > Normal missions will split even if you don't complete them fully or are playing from a save file,
@@ -282,7 +282,9 @@ use this one instead of the one above for 100%.");
 	
 	// Add the setting for the final 100% split.
 	settings.Add("finalSplit100%", false, "100%", "misc100%");
-	settings.SetToolTip("finalSplit100%", "Splits after every goal towards 100% has been completed.");
+	settings.SetToolTip("finalSplit100%",
+		@"Splits after every goal towards 100% has been completed.
+If you are having autosplitter issues, it's suggested you disable this.");
 	
 	// Memory address pointers for all of the 100% stats in the game.
 	vars.statPointers = new Dictionary<int, string> {
@@ -419,9 +421,26 @@ init
 			break;
 	}
 	
-	// Goes through the dictionary in "startup" and adds those pointers with the base address to the memory watcher list.
+	// If the 100% final split is enabled, all the pointers need to be added.
+	// Otherwise, we can just add the ones applicable to save on resources.
+	Dictionary<int, string> filteredStatPointers = new Dictionary<int, string>();
+	if (settings["finalSplit100%"])
+		filteredStatPointers = vars.statPointers;
+	else {
+		foreach (var pointer in vars.statPointers) {
+			if (settings[pointer.Value]
+			|| (pointer.Value == "L3M2" && settings["L3M2100%"])
+			|| (pointer.Value == "L3M7" && settings["L3M7100%"])
+			|| (pointer.Value == "L7M7" && settings["L7M7100%"])
+			|| (pointer.Value == "BonusMovie" && settings["bonusMovie"])
+			|| (pointer.Value == "L5CollectorCards" && settings["mangosCard"]))
+				filteredStatPointers.Add(pointer.Key, pointer.Value);
+		}
+	}
+	
+	// Goes through the dictionary above and adds those pointers with the base address to the memory watcher list.
 	vars.statWatchers = new MemoryWatcherList();
-	foreach (var pointer in vars.statPointers) {
+	foreach (var pointer in filteredStatPointers) {
 		if (version == "FairLightGER")
 			vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8944, pointer.Key)) { Name = pointer.Value });
 		else
