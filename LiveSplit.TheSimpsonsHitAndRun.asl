@@ -1,5 +1,5 @@
 // Compatibility:
-// > This script works with the popular "FairLight" No-CD (and also the German version by the same group). It will check the user is using this before doing the update/start/reset/split/isLoading functions.
+// > This script works with the popular "FairLight" No-CD and also some other No-CDs from non-English versions. It will check the user is using one of these before doing the update/start/reset/split/isLoading functions.
 
 // Notes:
 // > Normal missions will split even if you don't complete them fully or are playing from a save file,
@@ -32,7 +32,7 @@ state("Simpsons", "FairLightENG")
 	int activeLevel : 0x2C8984, 0x1108;  // 0-6 depending on what level you are on.
 }
 
-state("Simpsons", "FairLightGER")
+state("Simpsons", "NonENGVarious")
 {
 	// Some basic non-stat memory addresses are stored here.
 	int gameState : 0x2C8FD4, 0xC;  // Can be a few different numbers to do with the state the game is currently in.
@@ -285,6 +285,10 @@ use this one instead of the one above for 100%.");
 	settings.SetToolTip("finalSplit100%",
 		@"Splits after every goal towards 100% has been completed.
 If you are having autosplitter issues, it's suggested you disable this.");
+	/*settings.Add("calculate100%", false, "Calculate 100% Value", "misc100%");
+	settings.SetToolTip("calculate100%",
+		@"Calculate the 100% progession, for use with ASLVarViewer.
+If you are having autosplitter issues, it's suggested you disable this.");*/
 	
 	// Memory address pointers for all of the 100% stats in the game.
 	vars.statPointers = new Dictionary<int, string> {
@@ -409,6 +413,7 @@ init
 	// Declaring variables.
 	vars.canStart = true;  // The timer is allowed to start after the game has booted.
 	vars.justReset = false;  // Used to keep track of when the code triggers a reset.
+	//vars.currentPercentage = 0.0F;  // Used to store the current calculated percentage if enabled.
 	
 	// Version checking.
 	switch (modules.First().ModuleMemorySize)
@@ -417,14 +422,18 @@ init
 			if (current.verCheck == "american")
 				version = "FairLightENG";
 			else
-				version = "FairLightGER";
+				version = "NonENGVarious"; // German No-CD
+			break;
+		case 2964216: // French No-CD
+		case 3993600: // Spanish No-CD
+			version = "NonENGVarious";
 			break;
 	}
 	
-	// If the 100% final split is enabled, all the pointers need to be added.
-	// Otherwise, we can just add the ones applicable to save on resources.
+	// If the 100% final split is enabled or we need to calculate percentage, all the pointers
+	// need to be added. Otherwise, we can just add the ones applicable to save on resources.
 	Dictionary<int, string> filteredStatPointers = new Dictionary<int, string>();
-	if (settings["finalSplit100%"])
+	if (settings["finalSplit100%"]/* || settings["calculate100%"]*/)
 		filteredStatPointers = vars.statPointers;
 	else {
 		foreach (var pointer in vars.statPointers) {
@@ -441,7 +450,7 @@ init
 	// Goes through the dictionary above and adds those pointers with the base address to the memory watcher list.
 	vars.statWatchers = new MemoryWatcherList();
 	foreach (var pointer in filteredStatPointers) {
-		if (version == "FairLightGER")
+		if (version == "NonENGVarious")
 			vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8944, pointer.Key)) { Name = pointer.Value });
 		else
 			vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, pointer.Key)) { Name = pointer.Value });
