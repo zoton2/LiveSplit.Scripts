@@ -30,6 +30,7 @@ state("Simpsons", "FairLightENG")
 	int coinsTotal : 0x2C8984, 0x111C;  // L O D S of E M O N E, what's that spell? Loadsamoney! (probably)
 	int activeMission : 0x2C8984, 0x110C;  // 0-6 (or 0-7 on level 1 cuz tutorial); doesn't change for bonus missions/races.
 	int activeLevel : 0x2C8984, 0x1108;  // 0-6 depending on what level you are on.
+	int boothScreens : 0x2C8450, 0x34; // If in a phone booth or on a outfit/car buying screen.
 }
 
 state("Simpsons", "NonENGVarious")
@@ -45,6 +46,7 @@ state("Simpsons", "NonENGVarious")
 	int coinsTotal : 0x2C8944, 0x111C;  // L O D S of E M O N E, what's that spell? Loadsamoney! (probably)
 	int activeMission : 0x2C8944, 0x110C;  // 0-6 (or 0-7 on level 1 cuz tutorial); doesn't change for bonus missions/races.
 	int activeLevel : 0x2C8944, 0x1108;  // 0-6 depending on what level you are on.
+	int boothScreens : 0x2C8410, 0x34; // If in a phone booth or on a outfit/car buying screen.
 }
 
 startup
@@ -625,6 +627,6 @@ isLoading
 {
 	// Load removing for most loading screens in the game.
 	return current.gameState == 8
-	|| (current.gameState == 10 && current.notLoading == 0 && current.paused != 1)
+	|| (current.gameState == 10 && current.notLoading == 0 && current.paused == 0 && current.boothScreens == 0)
 	|| (current.gameState == 2 && current.mainMenu == 0);
 }
