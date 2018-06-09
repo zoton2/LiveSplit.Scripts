@@ -92,7 +92,7 @@ state("GTA5", "RGSC7912")
 
 state("GTA5", "Steam13651")
 {
-	int loading : 0x2243660;
+	int loading : 0x239CCF0;
 }
 
 init
