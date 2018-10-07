@@ -4,14 +4,10 @@
 // Notes:
 // > Normal missions will split even if you don't complete them fully or are playing from a save file,
 //   so it works with NG+ and Any% as well.
-// > I added some code for settings for gags/clothing/wasps but don't know if they're wanted or useful enough
-//   to code the actual splitting for them, so they're commented out for now.
-// > This code should be idiot proof, so if you accidentally go to a higher level or mission in NG+, you should
-//   still be able to go back to the correct mission and the split should still work from there on.
 
 state("Simpsons")
 {
-	// A horrible way to check, but hopefully only temporary.
+	// A horrible way to check, but hopefully only temporary (future note: apparently not).
 	// If you are playing on the English version, this is "american".
 	// (No, this is not the language, but the string of a costume in the game.)
 	string8 verCheck : 0x24AB28;
@@ -67,18 +63,6 @@ startup
 	settings.Add("L1TimeTrial", false, "Time Trial", "L1Races");
 	settings.Add("L1CircuitRace", false, "Circuit", "L1Races");
 	settings.Add("L1CheckpointRace", false, "Checkpoint", "L1Races");
-	/*settings.Add("L1CollectorCards", false, "Collector Cards", "level1");
-	for (var i = 1; i <= 7; i++) {
-		settings.Add("L1CollectorCard"+i, false, i.ToString(), "L1CollectorCards");
-	}
-	settings.Add("L1Wasps", false, "Wasp Cameras", "level1");
-	for (var i = 1; i <= 20; i++) {
-		settings.Add("L1Wasp"+i, false, i.ToString(), "L1Wasps");
-	}
-	settings.Add("L1Gags", false, "Gags", "level1");
-	for (var i = 1; i <= 15; i++) {
-		settings.Add("L1Gag"+i, false, i.ToString(), "L1Gags");
-	}*/
 	settings.Add("L1BM", false, "Bonus Mission: This Old Shanty", "l1100%");
 	
 	// Level 2 settings.
@@ -96,18 +80,6 @@ startup
 	settings.Add("L2TimeTrial", false, "Time Trial", "L2Races");
 	settings.Add("L2CircuitRace", false, "Circuit", "L2Races");
 	settings.Add("L2CheckpointRace", false, "Checkpoint", "L2Races");
-	/*settings.Add("L2CollectorCards", false, "Collector Cards", "level2");
-	for (var i = 1; i <= 7; i++) {
-		settings.Add("L2CollectorCard"+i, false, i.ToString(), "L2CollectorCards");
-	}
-	settings.Add("L2Wasps", false, "Wasp Cameras", "level2");
-	for (var i = 1; i <= 20; i++) {
-		settings.Add("L2Wasp"+i, false, i.ToString(), "L2Wasps");
-	}
-	settings.Add("L2Gags", false, "Gags", "level2");
-	for (var i = 1; i <= 11; i++) {
-		settings.Add("L2Gag"+i, false, i.ToString(), "L2Gags");
-	}*/
 	settings.Add("L2BM", false, "Bonus Mission: Dial B for Blood", "l2100%");
 	
 	// Level 3 settings.
@@ -125,26 +97,6 @@ startup
 	settings.Add("L3TimeTrial", false, "Time Trial", "L3Races");
 	settings.Add("L3CircuitRace", false, "Circuit", "L3Races");
 	settings.Add("L3CheckpointRace", false, "Checkpoint", "L3Races");
-	/*settings.Add("L3CollectorCards", false, "Collector Cards", "level3");
-	for (var i = 1; i <= 7; i++) {
-		settings.Add("L3CollectorCard"+i, false, i.ToString(), "L3CollectorCards");
-	}
-	settings.Add("L3Wasps", false, "Wasp Cameras", "level3");
-	for (var i = 1; i <= 20; i++) {
-		settings.Add("L3Wasp"+i, false, i.ToString(), "L3Wasps");
-	}
-	settings.Add("L3Gags", false, "Gags", "level3");
-	for (var i = 1; i <= 11; i++) {
-		settings.Add("L3Gag"+i, false, i.ToString(), "L3Gags");
-	}*/
-	settings.Add("L3M2100%", false, "M2: Clueless (for 100%)", "l3100%");
-	settings.SetToolTip("L3M2100%",
-		@"Splits once the mission has actually been fully completed;
-only use this if your route involves initially skippping this mission.");
-	settings.Add("L3M7100%", false, "M7: The Old Pirate and the Sea (for 100%)", "l3100%");
-	settings.SetToolTip("L3M7100%",
-		@"Splits once the mission has actually been fully completed;
-only use this if your route involves initially skippping this mission.");
 	settings.Add("L3BM", false, "Bonus Mission: Princi-Pal", "l3100%");
 	
 	// Level 4 settings.
@@ -162,18 +114,6 @@ only use this if your route involves initially skippping this mission.");
 	settings.Add("L4TimeTrial", false, "Time Trial", "L4Races");
 	settings.Add("L4CircuitRace", false, "Circuit", "L4Races");
 	settings.Add("L4CheckpointRace", false, "Checkpoint", "L4Races");
-	/*settings.Add("L4CollectorCards", false, "Collector Cards", "level4");
-	for (var i = 1; i <= 7; i++) {
-		settings.Add("L4CollectorCard"+i, false, i.ToString(), "L4CollectorCards");
-	}
-	settings.Add("L4Wasps", false, "Wasp Cameras", "level4");
-	for (var i = 1; i <= 20; i++) {
-		settings.Add("L4Wasp"+i, false, i.ToString(), "L4Wasps");
-	}
-	settings.Add("L4Gags", false, "Gags", "level4");
-	for (var i = 1; i <= 15; i++) {
-		settings.Add("L4Gag"+i, false, i.ToString(), "L4Gags");
-	}*/
 	settings.Add("L4BM", false, "Bonus Mission: Beached Love", "l4100%");
 	
 	// Level 5 settings.
@@ -191,18 +131,6 @@ only use this if your route involves initially skippping this mission.");
 	settings.Add("L5TimeTrial", false, "Time Trial", "L5Races");
 	settings.Add("L5CircuitRace", false, "Circuit", "L5Races");
 	settings.Add("L5CheckpointRace", false, "Checkpoint", "L5Races");
-	/*settings.Add("L5CollectorCards", false, "Collector Cards", "level5");
-	for (var i = 1; i <= 7; i++) {
-		settings.Add("L5CollectorCard"+i, false, i.ToString(), "L5CollectorCards");
-	}
-	settings.Add("L5Wasps", false, "Wasp Cameras", "level5");
-	for (var i = 1; i <= 20; i++) {
-		settings.Add("L5Wasp"+i, false, i.ToString(), "L5Wasps");
-	}
-	settings.Add("L5Gags", false, "Gags", "level5");
-	for (var i = 1; i <= 6; i++) {
-		settings.Add("L5Gag"+i, false, i.ToString(), "L5Gags");
-	}*/
 	settings.Add("L5BM", false, "Bonus Mission: Kinky Frinky", "l5100%");
 	
 	// Level 6 settings.
@@ -220,18 +148,6 @@ only use this if your route involves initially skippping this mission.");
 	settings.Add("L6TimeTrial", false, "Time Trial", "L6Races");
 	settings.Add("L6CircuitRace", false, "Circuit", "L6Races");
 	settings.Add("L6CheckpointRace", false, "Checkpoint", "L6Races");
-	/*settings.Add("L6CollectorCards", false, "Collector Cards", "level6");
-	for (var i = 1; i <= 7; i++) {
-		settings.Add("L6CollectorCard"+i, false, i.ToString(), "L6CollectorCards");
-	}
-	settings.Add("L6Wasps", false, "Wasp Cameras", "level6");
-	for (var i = 1; i <= 20; i++) {
-		settings.Add("L6Wasp"+i, false, i.ToString(), "L6Wasps");
-	}
-	settings.Add("L6Gags", false, "Gags", "level6");
-	for (var i = 1; i <= 11; i++) {
-		settings.Add("L6Gag"+i, false, i.ToString(), "L6Gags");
-	}*/
 	settings.Add("L6BM", false, "Bonus Mission: Milking the Pigs", "l6100%");
 	
 	// Level 7 settings.
@@ -249,18 +165,6 @@ only use this if your route involves initially skippping this mission.");
 	settings.Add("L7TimeTrial", false, "Time Trial", "L7Races");
 	settings.Add("L7CircuitRace", false, "Circuit", "L7Races");
 	settings.Add("L7CheckpointRace", false, "Checkpoint", "L7Races");
-	/*settings.Add("L7CollectorCards", false, "Collector Cards", "level7");
-	for (var i = 1; i <= 7; i++) {
-		settings.Add("L7CollectorCard"+i, false, i.ToString(), "L7CollectorCards");
-	}
-	settings.Add("L7Wasps", false, "Wasp Cameras", "level7");
-	for (var i = 1; i <= 20; i++) {
-		settings.Add("L7Wasp"+i, false, i.ToString(), "L7Wasps");
-	}
-	settings.Add("L7Gags", false, "Gags", "level7");
-	for (var i = 1; i <= 15; i++) {
-		settings.Add("L7Gag"+i, false, i.ToString(), "L7Gags");
-	}*/
 	settings.Add("L7BM", false, "Bonus Mission: Flaming Tires", "l7100%");
 	settings.Add("L7M7100%", false, "M7: Alien \"Auto\"topsy Part III (for 100%)", "l7100%");
 	settings.SetToolTip("L7M7100%",
@@ -270,27 +174,15 @@ use this one instead of the one above for 100%.");
 	// Add the header for misc. 100% stuff.
 	settings.Add("misc100%", false, "Miscellaneous 100% Stuff");
 	
-	// Add the setting for coin grinding!
-	settings.Add("coinGrinding", false, "Coin Grinding (6200 L6M6)", "misc100%");
-	settings.SetToolTip("coinGrinding", "Splits once you have more than 6200 coins and you're on \"Set to Kill\".");
-	
 	// Add the setting for picking up the bonus movie ticket.
 	settings.Add("bonusMovie", false, "Bonus Movie", "misc100%");
 	settings.SetToolTip("bonusMovie", "Splits when you pick up the ticket in the Android's Dungeon.");
-	
-	// Add the setting for a specific card. For Mango <3.
-	settings.Add("mangosCard", false, "Mango's Card (L5 Card 3)", "misc100%");
-	settings.SetToolTip("mangosCard", "For Mango <3.");
 	
 	// Add the setting for the final 100% split.
 	settings.Add("finalSplit100%", false, "100%", "misc100%");
 	settings.SetToolTip("finalSplit100%",
 		@"Splits after every goal towards 100% has been completed.
 If you are having autosplitter issues, it's suggested you disable this.");
-	/*settings.Add("calculate100%", false, "Calculate 100% Value", "misc100%");
-	settings.SetToolTip("calculate100%",
-		@"Calculate the 100% progession, for use with ASLVarViewer.
-If you are having autosplitter issues, it's suggested you disable this.");*/
 	
 	// Memory address pointers for all of the 100% stats in the game.
 	vars.statPointers = new Dictionary<int, string> {
@@ -415,7 +307,6 @@ init
 	// Declaring variables.
 	vars.canStart = true;  // The timer is allowed to start after the game has booted.
 	vars.justReset = false;  // Used to keep track of when the code triggers a reset.
-	//vars.currentPercentage = 0.0F;  // Used to store the current calculated percentage if enabled.
 	
 	// Version checking.
 	switch (modules.First().ModuleMemorySize)
@@ -435,16 +326,14 @@ init
 	// If the 100% final split is enabled or we need to calculate percentage, all the pointers
 	// need to be added. Otherwise, we can just add the ones applicable to save on resources.
 	Dictionary<int, string> filteredStatPointers = new Dictionary<int, string>();
-	if (settings["finalSplit100%"]/* || settings["calculate100%"]*/)
+	if (settings["finalSplit100%"])
 		filteredStatPointers = vars.statPointers;
 	else {
 		foreach (var pointer in vars.statPointers) {
 			if (settings[pointer.Value]
-			|| (pointer.Value == "L3M2" && settings["L3M2100%"])
 			|| (pointer.Value == "L3M7" && settings["L3M7100%"])
 			|| (pointer.Value == "L7M7" && settings["L7M7100%"])
-			|| (pointer.Value == "BonusMovie" && settings["bonusMovie"])
-			|| (pointer.Value == "L5CollectorCards" && settings["mangosCard"]))
+			|| (pointer.Value == "BonusMovie" && settings["bonusMovie"]))
 				filteredStatPointers.Add(pointer.Key, pointer.Value);
 		}
 	}
@@ -470,13 +359,17 @@ update
 	
 	// Update all of the memory readings for the stats.
 	vars.statWatchers.UpdateAll(game);
+
+	// Reset some stuff when the timer is reset, either manually or automatically.
+	if (old.timerPhase != current.timerPhase && current.timerPhase == TimerPhase.NotRunning) {
+		timer.Run.Offset = TimeSpan.FromSeconds(0); // Reset the splits offset back to 0.
+	}
 	
-	// Reset some variables when the timer is started, so we don't need to rely on the start action in this script.
+	// Reset some stuff when the timer is started, so we don't need to rely on the start action in this script.
 	if (((old.timerPhase != current.timerPhase && old.timerPhase != TimerPhase.Paused) || vars.justReset) && current.timerPhase == TimerPhase.Running) {
 		// Resetting/changing variables.
 		vars.justReset = false;
 		vars.canStart = false;
-		vars.coinGrindingDone = false;
 		vars.highestLevel = 0;
 		vars.highestMission = new int[7];
 		
@@ -552,19 +445,6 @@ split
 					vars.doSplit = true;
 			}
 			
-			// Some unique things for 100% in level 3.
-			if (current.activeLevel+1 == 3) {
-				// Split when Clueless is actually completed.
-				if (settings["L3M2100%"]
-				&& vars.statWatchers["L3M2"].Current > vars.statWatchers["L3M2"].Old)
-					vars.doSplit = true;
-				
-				// Split when The Old Pirate and the Sea is actually completed.
-				if (settings["L3M7100%"]
-				&& vars.statWatchers["L3M7"].Current > vars.statWatchers["L3M7"].Old)
-					vars.doSplit = true;
-			}
-			
 			// Some unique things for 100% in level 7.
 			if (current.activeLevel+1 == 7) {
 				// Split for L7M7, but for after the mission is completed but before the final FMV starts. Could be used for 100% runs if needed.
@@ -580,17 +460,8 @@ split
 		
 		// If the settings for the misc. 100% stuff are activated.
 		if (settings["misc100%"]) {
-			// Coin grinding! Splits once they have more than 6200 coins and on "Set to Kill".
-			if (settings["coinGrinding"] && !vars.coinGrindingDone && vars.highestLevel == 5 && vars.highestMission[5] == 5 && current.coinsTotal > 6200) {
-				vars.coinGrindingDone = true; vars.doSplit = true;
-			}
-			
 			// Splits once the bonus movie ticket has been picked up.
 			if (settings["bonusMovie"] && vars.statWatchers["BonusMovie"].Current > vars.statWatchers["BonusMovie"].Old)
-				vars.doSplit = true;
-			
-			// A split for Mango to help with his splits because this was in his terrible script.
-			if (settings["mangosCard"] && vars.statWatchers["L5CollectorCards"].Old == 2 && vars.statWatchers["L5CollectorCards"].Current == 3)
 				vars.doSplit = true;
 			
 			// Final split for 100%, once all goals that count towards 100% are completed.
@@ -611,15 +482,36 @@ split
 
 start
 {
-	// Done on the same frame as the reset, when a new game is started and the FMV is loaded in.
-	return vars.canStart && current.newGame == 0 && current.mainMenu == 1 && current.lastVideoLoaded == "fmv1a.rmv";
+	if (!vars.canStart)
+		return false;
+
+	// For "New Game", done on the same frame as the reset, when a new game is started and the FMV is loaded in.
+	if (current.newGame == 0 && current.mainMenu == 1 && current.lastVideoLoaded == "fmv1a.rmv") {
+		timer.Run.Offset = TimeSpan.FromSeconds(0);
+		return true;
+	}
+
+	// For "Resume Game" using the community save, done on the same frame as the reset, we need to check that we're (probably) at the start of a new run.
+	else if (current.newGame == 1 && current.coinsTotal == 0 && current.activeMission == 0 && current.activeLevel == 0
+		&& current.mainMenu == 1 && current.gameState == 8 && old.gameState == 2) {
+		timer.Run.Offset = TimeSpan.FromSeconds(40.9);
+		return true;
+	}
 }
 
 reset
 {
-	// Done on the same frame as the start split, when a new game is started and the FMV is loaded in.
+	// For "New Game", done on the same frame as the start split, when a new game is started and the FMV is loaded in.
 	if (old.newGame > current.newGame && current.mainMenu == 1 && current.lastVideoLoaded == "fmv1a.rmv") {
-		vars.justReset = true; return true;
+		vars.justReset = true;
+		return true;
+	}
+
+	// For "Resume Game" using the community save, done on the same frame as the start split, we need to check that we're (probably) at the start of a new run.
+	else if (current.newGame == 1 && current.coinsTotal == 0 && current.activeMission == 0 && current.activeLevel == 0
+		&& current.mainMenu == 1 && current.gameState == 8 && old.gameState == 2) {
+		vars.justReset = true; 
+		return true;
 	}
 }
 
