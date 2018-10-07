@@ -27,6 +27,7 @@ state("Simpsons", "FairLightENG")
 	int activeMission : 0x2C8984, 0x110C;  // 0-6 (or 0-7 on level 1 cuz tutorial); doesn't change for bonus missions/races.
 	int activeLevel : 0x2C8984, 0x1108;  // 0-6 depending on what level you are on.
 	int boothScreens : 0x2C8450, 0x34; // If in a phone booth or on a outfit/car buying screen.
+	int resumeGame : 0x2C8998; // 0 when on main menu, goes to a high number when Resume Game is pressed.
 }
 
 state("Simpsons", "NonENGVarious")
@@ -43,6 +44,7 @@ state("Simpsons", "NonENGVarious")
 	int activeMission : 0x2C8944, 0x110C;  // 0-6 (or 0-7 on level 1 cuz tutorial); doesn't change for bonus missions/races.
 	int activeLevel : 0x2C8944, 0x1108;  // 0-6 depending on what level you are on.
 	int boothScreens : 0x2C8410, 0x34; // If in a phone booth or on a outfit/car buying screen.
+	int resumeGame : 0x2C8958; // 0 when on main menu, goes to a high number when Resume Game is pressed.
 }
 
 startup
@@ -194,6 +196,16 @@ if the mission was never completed before; use this one instead of the one above
 	settings.SetToolTip("finalSplit100%",
 		@"Splits after every goal towards 100% has been completed.
 If you are having autosplitter issues, it's suggested you disable this.");
+
+	// Add the setting for NG+ start/reset.
+	settings.Add("startNG+", false, "Start Timer on Resume Game");
+	settings.SetToolTip("startNG+",
+		@"Starts the timer when the Resume Game option is selected.
+Only useful for New Game Plus categories.");
+	settings.Add("resetNG+", false, "Reset Timer on Resume Game");
+	settings.SetToolTip("resetNG+",
+		@"Resets the timer when the Resume Game option is selected.
+Only useful for New Game Plus categories.");
 	
 	// Memory address pointers for all of the 100% stats in the game.
 	vars.statPointers = new Dictionary<int, string> {
@@ -510,6 +522,12 @@ start
 		timer.Run.Offset = TimeSpan.FromSeconds(40.9);
 		return true;
 	}
+
+	// For "Resume Game" using any save, as long as the setting is enabled, done on the same frame as the reset.
+	else if (settings["startNG+"] && current.newGame == 1 && current.mainMenu == 1 && current.gameState == 2 && old.resumeGame == 0 && current.resumeGame > 0) {
+		timer.Run.Offset = TimeSpan.FromSeconds(0);
+		return true;
+	}
 }
 
 reset
@@ -523,7 +541,13 @@ reset
 	// For "Resume Game" using the community save, done on the same frame as the start split, we need to check that we're (probably) at the start of a new run.
 	else if (current.newGame == 1 && current.coinsTotal == 0 && current.activeMission == 0 && current.activeLevel == 0
 		&& current.mainMenu == 1 && current.gameState == 8 && old.gameState == 2) {
-		vars.justReset = true; 
+		vars.justReset = true;
+		return true;
+	}
+	
+	// For "Resume Game" using any save, as long as the setting is enabled, done on the same frame as the start split.
+	else if (settings["resetNG+"] && current.newGame == 1 && current.mainMenu == 1 && current.gameState == 2 && old.resumeGame == 0 && current.resumeGame > 0) {
+		vars.justReset = true;
 		return true;
 	}
 }
