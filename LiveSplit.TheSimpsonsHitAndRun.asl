@@ -166,6 +166,11 @@ startup
 	settings.Add("L7M6", false, "6: Alien \"Auto\"topsy Part II", "level7");
 	settings.Add("L7M7", false, "7: Alien \"Auto\"topsy Part III", "level7");
 	settings.SetToolTip("L7M7", "Splits as soon as the final FMV starts playing.");
+	settings.Add("L7M7NG+", false, "7: Alien \"Auto\"topsy Part III (for NG+)", "level7");
+	settings.SetToolTip("L7M7NG+",
+		@"Splits once the mission has been completed but before the final FMV starts playing
+even if the mission was completed before; use this one instead of the one above
+for New Game Plus categories.");
 	settings.Add("l7100%", false, "100%", "level7");
 	settings.Add("L7Races", false, "Races", "l7100%");
 	settings.Add("L7TimeTrial", false, "Time Trial", "L7Races");
@@ -174,8 +179,8 @@ startup
 	settings.Add("L7BM", false, "Bonus Mission: Flaming Tires", "l7100%");
 	settings.Add("L7M7100%", false, "M7: Alien \"Auto\"topsy Part III (for 100%)", "l7100%");
 	settings.SetToolTip("L7M7100%",
-		@"Splits once the mission has been completed but before the final FMV starts playing;
-use this one instead of the one above for 100%.");
+		@"Splits once the mission has been completed but before the final FMV starts playing
+if the mission was never completed before; use this one instead of the one above for 100%.");
 	
 	// Add the header for misc. 100% stuff.
 	settings.Add("misc100%", false, "Miscellaneous 100% Stuff");
@@ -337,7 +342,6 @@ init
 	else {
 		foreach (var pointer in vars.statPointers) {
 			if (settings[pointer.Value]
-			|| (pointer.Value == "L3M7" && settings["L3M7100%"])
 			|| (pointer.Value == "L7M7" && settings["L7M7100%"])
 			|| (pointer.Value == "BonusMovie" && settings["bonusMovie"]))
 				filteredStatPointers.Add(pointer.Key, pointer.Value);
@@ -389,7 +393,7 @@ split
 	
 	// While the game is booting (state 0) the 100% values can be messed up so don't want to check then.
 	if (current.gameState > 0) {
-		// If the current mission we're on is the one above the last recorded highest number and we're on the same level.
+		// If the current mission we're on is 1 higher than the last one and we're on the same level.
 		if (current.activeLevel == old.activeLevel && current.activeMission == old.activeMission+1) {
 			// If the settings for the level we are currently on are activated.
 			if (settings["level"+(current.activeLevel+1)]) {
@@ -459,7 +463,12 @@ split
 		
 		// Final split for most full-game categories, as soon as the final FMV starts.
 		// The active level/mission here might look weird, but as soon as the final mission finishes, the game sets itself to L1M1.
-		if (settings["L7M7"] && current.activeLevel == 0 && current.activeMission == 1 && current.lastVideoLoaded == "fmv7.rmv" && current.videoPlaying == 1)
+		if (settings["L7M7"] && current.activeLevel == 0 && current.activeMission == 1 && current.lastVideoLoaded == "fmv7.rmv" && old.videoPlaying == 0 && current.videoPlaying == 1)
+			vars.doSplit = true;
+
+		// NG+ split for the final mission, which actually loops back around to L1M1.
+		if (settings["L7M7NG+"]
+		&& old.activeLevel == 6 && current.activeLevel == 0 && old.activeMission == 6 && current.activeMission == 1)
 			vars.doSplit = true;
 		
 		// If the settings for the misc. 100% stuff are activated.
