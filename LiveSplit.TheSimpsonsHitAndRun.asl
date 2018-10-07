@@ -376,12 +376,6 @@ update
 		// Resetting/changing variables.
 		vars.justReset = false;
 		vars.canStart = false;
-		vars.highestLevel = 0;
-		vars.highestMission = new int[7];
-		
-		// Store the currently set level/mission in case this is being done from a save.
-		vars.highestLevel = current.activeLevel;
-		vars.highestMission[current.activeLevel] = current.activeMission;
 	}
 	
 	// Allows the timer to start automatically again when it won't cause issues.
@@ -396,7 +390,7 @@ split
 	// While the game is booting (state 0) the 100% values can be messed up so don't want to check then.
 	if (current.gameState > 0) {
 		// If the current mission we're on is the one above the last recorded highest number and we're on the same level.
-		if (current.activeLevel == vars.highestLevel && current.activeMission == vars.highestMission[current.activeLevel]+1) {
+		if (current.activeLevel == old.activeLevel && current.activeMission == old.activeMission+1) {
 			// If the settings for the level we are currently on are activated.
 			if (settings["level"+(current.activeLevel+1)]) {
 				// Level 1's mission numbers works slightly differently.
@@ -408,21 +402,15 @@ split
 				if (settings["L"+(current.activeLevel+1)+"M"+(current.activeMission-onLevel1)])
 					vars.doSplit = true;
 			}
-			
-			// Store the mission we are now on as the highest mission/level
-			vars.highestMission[current.activeLevel] = current.activeMission;
 		}
 		
-		// If we're past level 1 and the settings are activated for the previous level.
+		// If we're past level 1.
 		if (current.activeLevel > 0) {
 			// If we just moved a level higher and all of the missions have been done in the last level.
-			if (current.activeLevel == vars.highestLevel+1 && vars.highestMission[vars.highestLevel] >= 6) {
+			if (current.activeLevel == old.activeLevel+1 && old.activeMission >= 6) {
 				// If the setting for splitting the last mission on the level we just came from is set, split.
 				if (settings["level"+current.activeLevel] && settings["L"+(current.activeLevel)+"M7"])
 					vars.doSplit = true;
-				
-				// Store the level we are now on as the highest mission/level
-				vars.highestLevel = current.activeLevel;
 			}
 		}
 		
@@ -470,7 +458,8 @@ split
 		}
 		
 		// Final split for most full-game categories, as soon as the final FMV starts.
-		if (settings["L7M7"] && vars.highestLevel == 6 && vars.highestMission[6] == 6 && current.lastVideoLoaded == "fmv7.rmv" && current.videoPlaying == 1)
+		// The active level/mission here might look weird, but as soon as the final mission finishes, the game sets itself to L1M1.
+		if (settings["L7M7"] && current.activeLevel == 0 && current.activeMission == 1 && current.lastVideoLoaded == "fmv7.rmv" && current.videoPlaying == 1)
 			vars.doSplit = true;
 		
 		// If the settings for the misc. 100% stuff are activated.
