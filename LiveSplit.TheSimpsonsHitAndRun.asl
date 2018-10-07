@@ -75,6 +75,8 @@ startup
 	settings.Add("L2M6", false, "6: Monkey See, Monkey D'oh!", "level2");
 	settings.Add("L2M7", false, "7: Cell-Outs", "level2");
 	settings.SetToolTip("L2M7", "Splits when you move to the next level.");
+	settings.Add("L2FMV", false, "After FMV (for NMS/W)", "level2");
+	settings.SetToolTip("L2FMV", "Splits once the final FMV for this level has done playing, for No Mission Skips/Warps use.");
 	settings.Add("l2100%", false, "100%", "level2");
 	settings.Add("L2Races", false, "Races", "l2100%");
 	settings.Add("L2TimeTrial", false, "Time Trial", "L2Races");
@@ -126,6 +128,8 @@ startup
 	settings.Add("L5M6", false, "6: Kwik Cash", "level5");
 	settings.Add("L5M7", false, "7: Curious Curator", "level5");
 	settings.SetToolTip("L5M7", "Splits when you move to the next level.");
+	settings.Add("L5FMV", false, "After FMV (for NMS/W)", "level5");
+	settings.SetToolTip("L5FMV", "Splits once the final FMV for this level has done playing, for No Mission Skips/Warps use.");
 	settings.Add("l5100%", false, "100%", "level5");
 	settings.Add("L5Races", false, "Races", "l5100%");
 	settings.Add("L5TimeTrial", false, "Time Trial", "L5Races");
@@ -143,6 +147,8 @@ startup
 	settings.Add("L6M6", false, "6: Set To Kill", "level6");
 	settings.Add("L6M7", false, "7: Kang and Kodos Strike Back", "level6");
 	settings.SetToolTip("L6M7", "Splits when you move to the next level.");
+	settings.Add("L6FMV", false, "After FMV (for NMS/W)", "level6");
+	settings.SetToolTip("L6FMV", "Splits once the final FMV for this level has done playing, for No Mission Skips/Warps use.");
 	settings.Add("l6100%", false, "100%", "level6");
 	settings.Add("L6Races", false, "Races", "l6100%");
 	settings.Add("L6TimeTrial", false, "Time Trial", "L6Races");
@@ -452,6 +458,15 @@ split
 				&& vars.statWatchers["L7M7"].Current > vars.statWatchers["L7M7"].Old)
 					vars.doSplit = true;
 			}
+		}
+		
+		// Used to detect when a video file stops playing, so we can split after it's done if needed.
+		// The active level needs to be 1 higher than the one the FMV is played in, because in memory the game has already moved on to the next level.
+		if (old.videoPlaying == 1 && current.videoPlaying == 0 &&
+		((current.activeLevel+1 == 3 && settings["L2FMV"] && current.lastVideoLoaded == "fmv3.rmv")
+		|| (current.activeLevel+1 == 6 && settings["L5FMV"] && current.lastVideoLoaded == "fmv5.rmv")
+		|| (current.activeLevel+1 == 7 && settings["L6FMV"] && current.lastVideoLoaded == "fmv6.rmv"))) {
+			vars.doSplit = true;
 		}
 		
 		// Final split for most full-game categories, as soon as the final FMV starts.
