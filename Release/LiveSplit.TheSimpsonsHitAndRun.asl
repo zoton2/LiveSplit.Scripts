@@ -16,16 +16,16 @@ state("Simpsons")
 state("Simpsons", "FairLightENG")
 {
 	// Some basic non-stat memory addresses are stored here.
-	int gameState : 0x2C9014, 0xC;  // Can be a few different numbers to do with the state the game is currently in.
-	int notLoading : 0x2C9018, 0x1D58;  // 0 if loading, 1 if not.
-	int paused : 0x2C8428, 0x18;  // If in the pause menu or not.
-	int mainMenu : 0x2C9018, 0x1A18;  // If on the main menu or not.
-	string11 lastVideoLoaded : 0x2C8980, 0x54, 0x14, 0xF;  // File name of the last video file the game loaded.
-	int videoPlaying : "binkw32.dll", 0x6521C;  // If a video is currently playing or not.
-	int newGame : 0x2C842C, 0x6C;  // Turns to 0 when a new game is started and changes to 1 when the first level is loaded.
-	int coinsTotal : 0x2C8984, 0x111C;  // L O D S of E M O N E, what's that spell? Loadsamoney! (probably)
-	int activeMission : 0x2C8984, 0x110C;  // 0-6 (or 0-7 on level 1 cuz tutorial); doesn't change for bonus missions/races.
-	int activeLevel : 0x2C8984, 0x1108;  // 0-6 depending on what level you are on.
+	int gameState : 0x2C9014, 0xC; // Can be a few different numbers to do with the state the game is currently in.
+	int notLoading : 0x2C9018, 0x1D58; // 0 if loading, 1 if not.
+	int paused : 0x2C8428, 0x18; // If in the pause menu or not.
+	int mainMenu : 0x2C9018, 0x1A18; // If on the main menu or not.
+	string11 lastVideoLoaded : 0x2C8980, 0x54, 0x14, 0xF; // File name of the last video file the game loaded.
+	int videoPlaying : "binkw32.dll", 0x6521C; // If a video is currently playing or not.
+	int newGame : 0x2C842C, 0x6C; // Turns to 0 when a new game is started and changes to 1 when the first level is loaded.
+	int coinsTotal : 0x2C8984, 0x111C; // L O D S of E M O N E, what's that spell? Loadsamoney! (probably)
+	int activeMission : 0x2C8984, 0x110C; // 0-6 (or 0-7 on level 1 cuz tutorial); doesn't change for bonus missions/races.
+	int activeLevel : 0x2C8984, 0x1108; // 0-6 depending on what level you are on.
 	int boothScreens : 0x2C8450, 0x34; // If in a phone booth or on a outfit/car buying screen.
 	int resumeGame : 0x2C8998; // 0 when on main menu, goes to a high number when Resume Game is pressed.
 }
@@ -33,16 +33,16 @@ state("Simpsons", "FairLightENG")
 state("Simpsons", "NonENGVarious")
 {
 	// Some basic non-stat memory addresses are stored here.
-	int gameState : 0x2C8FD4, 0xC;  // Can be a few different numbers to do with the state the game is currently in.
-	int notLoading : 0x2C8FD8, 0x1D58;  // 0 if loading, 1 if not.
-	int paused : 0x2C83E8, 0x18;  // If in the pause menu or not.
-	int mainMenu : 0x2C8FD8, 0x1A18;  // If on the main menu or not.
-	string11 lastVideoLoaded : 0x2C8940, 0x54, 0x14, 0xF;  // File name of the last video file the game loaded.
-	int videoPlaying : "binkw32.dll", 0x6521C;  // If a video is currently playing or not.
-	int newGame : 0x2C83EC, 0x6C;  // Turns to 0 when a new game is started and changes to 1 when the first level is loaded.
-	int coinsTotal : 0x2C8944, 0x111C;  // L O D S of E M O N E, what's that spell? Loadsamoney! (probably)
-	int activeMission : 0x2C8944, 0x110C;  // 0-6 (or 0-7 on level 1 cuz tutorial); doesn't change for bonus missions/races.
-	int activeLevel : 0x2C8944, 0x1108;  // 0-6 depending on what level you are on.
+	int gameState : 0x2C8FD4, 0xC; // Can be a few different numbers to do with the state the game is currently in.
+	int notLoading : 0x2C8FD8, 0x1D58; // 0 if loading, 1 if not.
+	int paused : 0x2C83E8, 0x18; // If in the pause menu or not.
+	int mainMenu : 0x2C8FD8, 0x1A18; // If on the main menu or not.
+	string11 lastVideoLoaded : 0x2C8940, 0x54, 0x14, 0xF; // File name of the last video file the game loaded.
+	int videoPlaying : "binkw32.dll", 0x6521C; // If a video is currently playing or not.
+	int newGame : 0x2C83EC, 0x6C; // Turns to 0 when a new game is started and changes to 1 when the first level is loaded.
+	int coinsTotal : 0x2C8944, 0x111C; // L O D S of E M O N E, what's that spell? Loadsamoney! (probably)
+	int activeMission : 0x2C8944, 0x110C; // 0-6 (or 0-7 on level 1 cuz tutorial); doesn't change for bonus missions/races.
+	int activeLevel : 0x2C8944, 0x1108; // 0-6 depending on what level you are on.
 	int boothScreens : 0x2C8410, 0x34; // If in a phone booth or on a outfit/car buying screen.
 	int resumeGame : 0x2C8958; // 0 when on main menu, goes to a high number when Resume Game is pressed.
 }
@@ -198,13 +198,15 @@ if the mission was never completed before; use this one instead of the one above
 If you are having autosplitter issues, it's suggested you disable this.");
 
 	// Add the setting for NG+ start/reset.
-	settings.Add("startNG+", false, "Start Timer on Resume Game");
+	settings.Add("startNG+", false, "Start Timer on Resume Game (for NG+)");
 	settings.SetToolTip("startNG+",
-		@"Starts the timer when the Resume Game option is selected.
+		@"DO NOT USE FOR NON NG+ CATEGORIES.
+Starts the timer when the Resume Game option is selected.
 Only useful for New Game Plus categories.");
-	settings.Add("resetNG+", false, "Reset Timer on Resume Game");
+	settings.Add("resetNG+", false, "Reset Timer on Resume Game (for NG+)");
 	settings.SetToolTip("resetNG+",
-		@"Resets the timer when the Resume Game option is selected.
+		@"DO NOT USE FOR NON NG+ CATEGORIES.
+Resets the timer when the Resume Game option is selected.
 Only useful for New Game Plus categories.");
 	
 	// Memory address pointers for all of the 100% stats in the game.
@@ -213,7 +215,7 @@ Only useful for New Game Plus categories.");
 		{0x238, "L1Wasps"},
 		{0x24C, "L1Gags"},
 		{0x234, "L1CharacterClothing"},
-		{0x230, "L1Vehicles"},  // Doesn't count cars won.
+		{0x230, "L1Vehicles"}, // Doesn't count cars won.
 		{0x19C, "L1TimeTrial"},
 		{0x1BC, "L1CircuitRace"},
 		{0x1DC, "L1CheckpointRace"},
@@ -229,7 +231,7 @@ Only useful for New Game Plus categories.");
 		{0x4A4, "L2Wasps"},
 		{0x4B8, "L2Gags"},
 		{0x4A0, "L2CharacterClothing"},
-		{0x49C, "L2Vehicles"},  // Doesn't count cars won.
+		{0x49C, "L2Vehicles"}, // Doesn't count cars won.
 		{0x408, "L2TimeTrial"},
 		{0x428, "L2CircuitRace"},
 		{0x448, "L2CheckpointRace"},
@@ -245,7 +247,7 @@ Only useful for New Game Plus categories.");
 		{0x710, "L3Wasps"},
 		{0x724, "L3Gags"},
 		{0x70C, "L3CharacterClothing"},
-		{0x708, "L3Vehicles"},  // Doesn't count cars won.
+		{0x708, "L3Vehicles"}, // Doesn't count cars won.
 		{0x674, "L3TimeTrial"},
 		{0x694, "L3CircuitRace"},
 		{0x6B4, "L3CheckpointRace"},
@@ -261,7 +263,7 @@ Only useful for New Game Plus categories.");
 		{0x97C, "L4Wasps"},
 		{0x990, "L4Gags"},
 		{0x978, "L4CharacterClothing"},
-		{0x974, "L4Vehicles"},  // Doesn't count cars won.
+		{0x974, "L4Vehicles"}, // Doesn't count cars won.
 		{0x8E0, "L4TimeTrial"},
 		{0x900, "L4CircuitRace"},
 		{0x920, "L4CheckpointRace"},
@@ -277,7 +279,7 @@ Only useful for New Game Plus categories.");
 		{0xBE8, "L5Wasps"},
 		{0xBFC, "L5Gags"},
 		{0xBE4, "L5CharacterClothing"},
-		{0xBE0, "L5Vehicles"},  // Doesn't count cars won.
+		{0xBE0, "L5Vehicles"}, // Doesn't count cars won.
 		{0xB4C, "L5TimeTrial"},
 		{0xB6C, "L5CircuitRace"},
 		{0xB8C, "L5CheckpointRace"},
@@ -293,7 +295,7 @@ Only useful for New Game Plus categories.");
 		{0xE54, "L6Wasps"},
 		{0xE68, "L6Gags"},
 		{0xE50, "L6CharacterClothing"},
-		{0xE4C, "L6Vehicles"},  // Doesn't count cars won.
+		{0xE4C, "L6Vehicles"}, // Doesn't count cars won.
 		{0xDB8, "L6TimeTrial"},
 		{0xDD8, "L6CircuitRace"},
 		{0xDF8, "L6CheckpointRace"},
@@ -309,7 +311,7 @@ Only useful for New Game Plus categories.");
 		{0x10C0, "L7Wasps"},
 		{0x10D4, "L7Gags"},
 		{0x10BC, "L7CharacterClothing"},
-		{0x10B8, "L7Vehicles"},  // Doesn't count cars won.
+		{0x10B8, "L7Vehicles"}, // Doesn't count cars won.
 		{0x1024, "L7TimeTrial"},
 		{0x1044, "L7CircuitRace"},
 		{0x1064, "L7CheckpointRace"},
@@ -328,8 +330,10 @@ Only useful for New Game Plus categories.");
 init
 {
 	// Declaring variables.
-	vars.canStart = true;  // The timer is allowed to start after the game has booted.
-	vars.justReset = false;  // Used to keep track of when the code triggers a reset.
+	vars.canStart = true; // The timer is allowed to start after the game has booted.
+	vars.justReset = false; // Used to keep track of when the code triggers a reset.
+	vars.originalOffset = timer.Run.Offset.TotalSeconds; // Stores the initial offset the user has set.
+	vars.splitFrameCount = 0; // Keeps count of the frames since the last split.
 	
 	// Version checking.
 	switch (modules.First().ModuleMemorySize)
@@ -378,13 +382,18 @@ update
 	
 	// Stores the curent phase the timer is in, so we can use the old one on the next frame.
 	current.timerPhase = timer.CurrentPhase;
+
+	// Stores the current split index we're on, so we can use the old one on the next frame.
+	current.splitIndex = timer.CurrentSplitIndex;
 	
 	// Update all of the memory readings for the stats.
 	vars.statWatchers.UpdateAll(game);
 
 	// Reset some stuff when the timer is reset, either manually or automatically.
+	// (In most cases for this game these don't happen on auto-reset though, due to it happening
+	// on the same frame as the auto-start, so this code needs to be repeated later.)
 	if (old.timerPhase != current.timerPhase && current.timerPhase == TimerPhase.NotRunning) {
-		timer.Run.Offset = TimeSpan.FromSeconds(0); // Reset the splits offset back to 0.
+		timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
 	}
 	
 	// Reset some stuff when the timer is started, so we don't need to rely on the start action in this script.
@@ -392,7 +401,12 @@ update
 		// Resetting/changing variables.
 		vars.justReset = false;
 		vars.canStart = false;
+		vars.splitFrameCount = 0;
 	}
+
+	// Reset the frame count for the splits when we move to a new split, in case someone does it manually.
+	if (current.splitIndex > old.splitIndex)
+		vars.splitFrameCount = 0;
 	
 	// Allows the timer to start automatically again when it won't cause issues.
 	if (!vars.canStart && current.newGame == 1)
@@ -402,11 +416,17 @@ update
 split
 {
 	vars.doSplit = false;
+	vars.splitFrameCount++;
+	vars.canSplitMissions = false;
+
+	// Activate the mission splits when 15 seconds have elapsed since the last one.
+	if (vars.splitFrameCount >= 900)
+		vars.canSplitMissions = true;
 	
 	// While the game is booting (state 0) the 100% values can be messed up so don't want to check then.
 	if (current.gameState > 0) {
 		// If the current mission we're on is 1 higher than the last one and we're on the same level.
-		if (current.activeLevel == old.activeLevel && current.activeMission == old.activeMission+1) {
+		if (current.activeLevel == old.activeLevel && current.activeMission == old.activeMission+1 && vars.canSplitMissions) {
 			// If the settings for the level we are currently on are activated.
 			if (settings["level"+(current.activeLevel+1)]) {
 				// Level 1's mission numbers works slightly differently.
@@ -421,7 +441,7 @@ split
 		}
 		
 		// If we're past level 1.
-		if (current.activeLevel > 0) {
+		if (current.activeLevel > 0 && vars.canSplitMissions) {
 			// If we just moved a level higher and all of the missions have been done in the last level.
 			if (current.activeLevel == old.activeLevel+1 && old.activeMission >= 6) {
 				// If the setting for splitting the last mission on the level we just came from is set, split.
@@ -431,7 +451,7 @@ split
 		}
 		
 		// If the normal settings and the 100% settings for the level we are currently on are activated.
-		if (settings["level"+(current.activeLevel+1)] && settings["l"+(current.activeLevel+1)+"100%"]) {
+		if (settings["level"+(current.activeLevel+1)] && settings["l"+(current.activeLevel+1)+"100%"] && vars.canSplitMissions) {
 			// If the bonus mission in the current level is done.
 			if (settings["L"+(current.activeLevel+1)+"BM"]
 			&& vars.statWatchers["L"+(current.activeLevel+1)+"BM"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"BM"].Old)
@@ -479,7 +499,7 @@ split
 			vars.doSplit = true;
 
 		// NG+ split for the final mission, which actually loops back around to L1M1.
-		if (settings["L7M7NG+"]
+		if (settings["L7M7NG+"] && vars.canSplitMissions
 		&& old.activeLevel == 6 && current.activeLevel == 0 && old.activeMission == 6 && current.activeMission == 1)
 			vars.doSplit = true;
 		
@@ -501,8 +521,10 @@ split
 		}
 	}
 	
-	if (vars.doSplit)
+	if (vars.doSplit) {
+		vars.splitFrameCount = 0;
 		return true;
+	}
 }
 
 start
@@ -512,6 +534,7 @@ start
 
 	// For "New Game", done on the same frame as the reset, when a new game is started and the FMV is loaded in.
 	if (current.newGame == 0 && current.mainMenu == 1 && current.lastVideoLoaded == "fmv1a.rmv") {
+		vars.originalOffset = timer.Run.Offset.TotalSeconds; // Stores the initial offset the user has set.
 		timer.Run.Offset = TimeSpan.FromSeconds(0);
 		return true;
 	}
@@ -519,12 +542,14 @@ start
 	// For "Resume Game" using the community save, done on the same frame as the reset, we need to check that we're (probably) at the start of a new run.
 	else if (current.newGame == 1 && current.coinsTotal == 0 && current.activeMission == 0 && current.activeLevel == 0
 		&& current.mainMenu == 1 && current.gameState == 8 && old.gameState == 2) {
+		vars.originalOffset = timer.Run.Offset.TotalSeconds; // Stores the initial offset the user has set.
 		timer.Run.Offset = TimeSpan.FromSeconds(40.9);
 		return true;
 	}
 
 	// For "Resume Game" using any save, as long as the setting is enabled, done on the same frame as the reset.
 	else if (settings["startNG+"] && current.newGame == 1 && current.mainMenu == 1 && current.gameState == 2 && old.resumeGame == 0 && current.resumeGame > 0) {
+		vars.originalOffset = timer.Run.Offset.TotalSeconds; // Stores the initial offset the user has set.
 		timer.Run.Offset = TimeSpan.FromSeconds(0);
 		return true;
 	}
@@ -534,6 +559,7 @@ reset
 {
 	// For "New Game", done on the same frame as the start split, when a new game is started and the FMV is loaded in.
 	if (old.newGame > current.newGame && current.mainMenu == 1 && current.lastVideoLoaded == "fmv1a.rmv") {
+		timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
 		vars.justReset = true;
 		return true;
 	}
@@ -541,12 +567,14 @@ reset
 	// For "Resume Game" using the community save, done on the same frame as the start split, we need to check that we're (probably) at the start of a new run.
 	else if (current.newGame == 1 && current.coinsTotal == 0 && current.activeMission == 0 && current.activeLevel == 0
 		&& current.mainMenu == 1 && current.gameState == 8 && old.gameState == 2) {
+		timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
 		vars.justReset = true;
 		return true;
 	}
 	
 	// For "Resume Game" using any save, as long as the setting is enabled, done on the same frame as the start split.
 	else if (settings["resetNG+"] && current.newGame == 1 && current.mainMenu == 1 && current.gameState == 2 && old.resumeGame == 0 && current.resumeGame > 0) {
+		timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
 		vars.justReset = true;
 		return true;
 	}
