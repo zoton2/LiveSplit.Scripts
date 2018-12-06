@@ -333,7 +333,6 @@ init
 	vars.canStart = true; // The timer is allowed to start after the game has booted.
 	vars.justReset = false; // Used to keep track of when the code triggers a reset.
 	vars.originalOffset = timer.Run.Offset.TotalSeconds; // Stores the initial offset the user has set.
-	vars.splitFrameCount = 0; // Keeps count of the frames since the last split.
 	
 	// Version checking.
 	switch (modules.First().ModuleMemorySize)
@@ -382,9 +381,6 @@ update
 	
 	// Stores the curent phase the timer is in, so we can use the old one on the next frame.
 	current.timerPhase = timer.CurrentPhase;
-
-	// Stores the current split index we're on, so we can use the old one on the next frame.
-	current.splitIndex = timer.CurrentSplitIndex;
 	
 	// Update all of the memory readings for the stats.
 	vars.statWatchers.UpdateAll(game);
@@ -401,12 +397,7 @@ update
 		// Resetting/changing variables.
 		vars.justReset = false;
 		vars.canStart = false;
-		vars.splitFrameCount = 0;
 	}
-
-	// Reset the frame count for the splits when we move to a new split, in case someone does it manually.
-	if (current.splitIndex > old.splitIndex)
-		vars.splitFrameCount = 0;
 	
 	// Allows the timer to start automatically again when it won't cause issues.
 	if (!vars.canStart && current.newGame == 1)
@@ -416,17 +407,11 @@ update
 split
 {
 	vars.doSplit = false;
-	vars.splitFrameCount++;
-	vars.canSplitMissions = false;
-
-	// Activate the mission splits when 15 seconds have elapsed since the last one.
-	if (vars.splitFrameCount >= 900)
-		vars.canSplitMissions = true;
 	
 	// While the game is booting (state 0) the 100% values can be messed up so don't want to check then.
 	if (current.gameState > 0) {
 		// If the current mission we're on is 1 higher than the last one and we're on the same level.
-		if (current.activeLevel == old.activeLevel && current.activeMission == old.activeMission+1 && vars.canSplitMissions) {
+		if (current.activeLevel == old.activeLevel && current.activeMission == old.activeMission+1) {
 			// If the settings for the level we are currently on are activated.
 			if (settings["level"+(current.activeLevel+1)]) {
 				// Level 1's mission numbers works slightly differently.
@@ -441,7 +426,7 @@ split
 		}
 		
 		// If we're past level 1.
-		if (current.activeLevel > 0 && vars.canSplitMissions) {
+		if (current.activeLevel > 0) {
 			// If we just moved a level higher and all of the missions have been done in the last level.
 			if (current.activeLevel == old.activeLevel+1 && old.activeMission >= 6) {
 				// If the setting for splitting the last mission on the level we just came from is set, split.
@@ -451,7 +436,7 @@ split
 		}
 		
 		// If the normal settings and the 100% settings for the level we are currently on are activated.
-		if (settings["level"+(current.activeLevel+1)] && settings["l"+(current.activeLevel+1)+"100%"] && vars.canSplitMissions) {
+		if (settings["level"+(current.activeLevel+1)] && settings["l"+(current.activeLevel+1)+"100%"]) {
 			// If the bonus mission in the current level is done.
 			if (settings["L"+(current.activeLevel+1)+"BM"]
 			&& vars.statWatchers["L"+(current.activeLevel+1)+"BM"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"BM"].Old)
@@ -499,7 +484,7 @@ split
 			vars.doSplit = true;
 
 		// NG+ split for the final mission, which actually loops back around to L1M1.
-		if (settings["L7M7NG+"] && vars.canSplitMissions
+		if (settings["L7M7NG+"]
 		&& old.activeLevel == 6 && current.activeLevel == 0 && old.activeMission == 6 && current.activeMission == 1)
 			vars.doSplit = true;
 		
@@ -521,10 +506,8 @@ split
 		}
 	}
 	
-	if (vars.doSplit) {
-		vars.splitFrameCount = 0;
+	if (vars.doSplit)
 		return true;
-	}
 }
 
 start
