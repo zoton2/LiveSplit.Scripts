@@ -134,9 +134,6 @@ init
 	// Add memory address for the "game state" to the watcher list.
 	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x505A2C+vars.offset)) { Name = "gameState" });
 	
-	// Add memory address for checking if the initial cutscene is skipped.
-	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x35CC50+vars.offset)) { Name = "initCutscene" });
-	
 	// Memory addresses used for the final split of Any% (see below).
 	vars.memoryWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x35F6B8+vars.offset)) { Name = "teHelipad" });
 	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x35BA2C+vars.offset)) { Name = "teTimer" });
@@ -177,9 +174,9 @@ split
 
 start
 {
-	// Starts the splits after the initial cutscene skip.
-	return vars.memoryWatchers["initCutscene"].Old == 0
-	&& vars.memoryWatchers["initCutscene"].Current == 3841;
+	// Starts the splits after the loading bar disappears.
+	return vars.memoryWatchers["gameState"].Old == 8
+	&& vars.memoryWatchers["gameState"].Current == 9;
 }
 
 reset
