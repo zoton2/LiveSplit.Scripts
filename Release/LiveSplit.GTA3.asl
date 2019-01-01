@@ -101,6 +101,7 @@ startup
 	settings.Add("btgFinalSplit", false, "Any% Final Split");
 	settings.SetToolTip("btgFinalSplit", "Splits once you lose control on \"The Exchange\".");
 	
+	// Setting for final split of 100%.
 	settings.Add("hundoFinalSplit", false, "100% Final Split");
 	settings.SetToolTip("hundoFinalSplit", "Splits once you reach 100% game completion.");
 }
