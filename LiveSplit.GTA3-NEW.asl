@@ -100,6 +100,10 @@ startup
 	// Setting for final split of Any%.
 	settings.Add("btgFinalSplit", false, "Any% Final Split");
 	settings.SetToolTip("btgFinalSplit", "Splits once you lose control on \"The Exchange\".");
+	
+	// Setting for final split of 100%.
+	settings.Add("hundoFinalSplit", false, "100% Final Split");
+	settings.SetToolTip("hundoFinalSplit", "Splits once you reach 100% game completion.");
 }
 
 init
@@ -137,6 +141,9 @@ init
 	// Memory addresses used for the final split of Any% (see below).
 	vars.memoryWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x35F6B8+vars.offset)) { Name = "teHelipad" });
 	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x35BA2C+vars.offset)) { Name = "teTimer" });
+	
+	// Memory address used for percentage checking 
+	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x50651C+vars.offset)) { Name = "progressMade" });
 }
 
 update
@@ -169,6 +176,8 @@ split
 	
 	// Splits for the final split of Any%.
 	if (settings["btgFinalSplit"] && vars.memoryWatchers["teHelipad"].Current == 1 && vars.memoryWatchers["teTimer"].Current != vars.memoryWatchers["teTimer"].Old)
+		return true;
+	if (settings["hundoFinalSplit"] && vars.memoryWatchers["progressMade"].Current == 154 && vars.memoryWatchers["progressMade"].Old != vars.memoryWatchers["progressMade"].Current)
 		return true;
 }
 
