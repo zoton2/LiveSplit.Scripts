@@ -159,20 +159,17 @@ startup
 	settings.Add("L6BM", false, "Bonus Mission: Milking the Pigs", "l6100%");
 	
 	// Level 7 settings.
-	settings.Add("level7", false, "Level 7");
+	settings.Add("level7", true, "Level 7");
 	settings.Add("L7M1", false, "1: Rigor Motors", "level7");
 	settings.Add("L7M2", false, "2: Long Black Probes", "level7");
 	settings.Add("L7M3", false, "3: Pocket Protector", "level7");
 	settings.Add("L7M4", false, "4: There's Something About Monty", "level7");
 	settings.Add("L7M5", false, "5: Alien \"Auto\"topsy Part I", "level7");
 	settings.Add("L7M6", false, "6: Alien \"Auto\"topsy Part II", "level7");
-	settings.Add("L7M7", false, "7: Alien \"Auto\"topsy Part III", "level7");
-	settings.SetToolTip("L7M7", "Splits as soon as the final FMV starts playing.");
-	settings.Add("L7M7NG+", false, "7: Alien \"Auto\"topsy Part III (for NG+)", "level7");
-	settings.SetToolTip("L7M7NG+",
+	settings.Add("L7M7", true, "7: Alien \"Auto\"topsy Part III", "level7");
+	settings.SetToolTip("L7M7", 
 		@"Splits once the mission has been completed but before the final FMV starts playing
-even if the mission was completed before; use this one instead of the one above
-for New Game Plus categories.");
+even if the mission was completed before");
 	settings.Add("l7100%", false, "100%", "level7");
 	settings.Add("L7Races", false, "Races", "l7100%");
 	settings.Add("L7TimeTrial", false, "Time Trial", "L7Races");
@@ -477,14 +474,9 @@ split
 		|| (current.activeLevel+1 == 7 && settings["L6FMV"] && current.lastVideoLoaded == "fmv6.rmv"))) {
 			vars.doSplit = true;
 		}
-		
-		// Final split for most full-game categories, as soon as the final FMV starts.
-		// The active level/mission here might look weird, but as soon as the final mission finishes, the game sets itself to L1M1.
-		if (settings["L7M7"] && current.activeLevel == 0 && current.activeMission == 1 && current.lastVideoLoaded == "fmv7.rmv" && old.videoPlaying == 0 && current.videoPlaying == 1)
-			vars.doSplit = true;
 
-		// NG+ split for the final mission, which actually loops back around to L1M1.
-		if (settings["L7M7NG+"]
+		// Final split for all full-game categories, as soon as the final mission ends (which actually loops back around to L1M1).
+		if (settings["L7M7"]
 		&& old.activeLevel == 6 && current.activeLevel == 0 && old.activeMission == 6 && current.activeMission == 1)
 			vars.doSplit = true;
 		
