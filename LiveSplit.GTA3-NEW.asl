@@ -11,6 +11,9 @@ state("gta3", "Steam") {}
 
 startup
 {
+	// Set the autosplitter refresh rate (lower = less CPU and less accurate, higher = more CPU usage and more accurate) default: 60
+	refreshRate = 30;
+	
 	// List of mission memory addresses (for Steam, see below for where offsets get added).
 	vars.missionAddresses = new Dictionary<int, string> {
 		{0x35B75C, "Give Me Liberty and Luigi's Girls"},
