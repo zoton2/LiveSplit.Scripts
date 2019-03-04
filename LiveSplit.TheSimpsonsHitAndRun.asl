@@ -330,6 +330,7 @@ init
 	vars.canStart = true; // The timer is allowed to start after the game has booted.
 	vars.justReset = false; // Used to keep track of when the code triggers a reset.
 	vars.originalOffset = timer.Run.Offset.TotalSeconds; // Stores the initial offset the user has set.
+	vars.splitsDone = new List<string>(); // Stores splits already done.
 	
 	// Version checking.
 	switch (modules.First().ModuleMemorySize)
@@ -387,6 +388,7 @@ update
 	// on the same frame as the auto-start, so this code needs to be repeated later.)
 	if (old.timerPhase != current.timerPhase && current.timerPhase == TimerPhase.NotRunning) {
 		timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
+		vars.splitsDone.Clear(); // Clear the list of already done splits.
 	}
 	
 	// Reset some stuff when the timer is started, so we don't need to rely on the start action in this script.
@@ -404,6 +406,7 @@ update
 split
 {
 	vars.doSplit = false;
+	vars.splitID = null;
 	
 	// While the game is booting (state 0) the 100% values can be messed up so don't want to check then.
 	if (current.gameState > 0) {
@@ -417,8 +420,10 @@ split
 					onLevel1 = 1;
 				
 				// If the setting for splitting the mission we just finished is set, split!
-				if (settings["L"+(current.activeLevel+1)+"M"+(current.activeMission-onLevel1)])
+				if (settings["L"+(current.activeLevel+1)+"M"+(current.activeMission-onLevel1)]) {
+					vars.splitID = "L"+(current.activeLevel+1)+"M"+(current.activeMission-onLevel1);
 					vars.doSplit = true;
+				}
 			}
 		}
 		
@@ -427,8 +432,10 @@ split
 			// If we just moved a level higher and all of the missions have been done in the last level.
 			if (current.activeLevel == old.activeLevel+1 && old.activeMission >= 6) {
 				// If the setting for splitting the last mission on the level we just came from is set, split.
-				if (settings["level"+current.activeLevel] && settings["L"+(current.activeLevel)+"M7"])
+				if (settings["level"+current.activeLevel] && settings["L"+(current.activeLevel)+"M7"]) {
+					vars.splitID = "L"+(current.activeLevel)+"M7";
 					vars.doSplit = true;
+				}
 			}
 		}
 		
@@ -468,17 +475,27 @@ split
 		
 		// Used to detect when a video file stops playing, so we can split after it's done if needed.
 		// The active level needs to be 1 higher than the one the FMV is played in, because in memory the game has already moved on to the next level.
-		if (old.videoPlaying == 1 && current.videoPlaying == 0 &&
-		((current.activeLevel+1 == 3 && settings["L2FMV"] && current.lastVideoLoaded == "fmv3.rmv")
-		|| (current.activeLevel+1 == 6 && settings["L5FMV"] && current.lastVideoLoaded == "fmv5.rmv")
-		|| (current.activeLevel+1 == 7 && settings["L6FMV"] && current.lastVideoLoaded == "fmv6.rmv"))) {
-			vars.doSplit = true;
+		if (old.videoPlaying == 1 && current.videoPlaying == 0) {
+			if (current.activeLevel+1 == 3 && settings["L2FMV"] && current.lastVideoLoaded == "fmv3.rmv") {
+				vars.splitID = "L2FMV";
+				vars.doSplit = true;
+			}
+			if (current.activeLevel+1 == 6 && settings["L5FMV"] && current.lastVideoLoaded == "fmv5.rmv") {
+				vars.splitID = "L5FMV";
+				vars.doSplit = true;
+			}
+			if (current.activeLevel+1 == 7 && settings["L6FMV"] && current.lastVideoLoaded == "fmv6.rmv") {
+				vars.splitID = "L6FMV";
+				vars.doSplit = true;
+			}
 		}
 
 		// Final split for all full-game categories, as soon as the final mission ends (which actually loops back around to L1M1).
 		if (settings["L7M7"]
-		&& old.activeLevel == 6 && current.activeLevel == 0 && old.activeMission == 6 && current.activeMission == 1)
+		&& old.activeLevel == 6 && current.activeLevel == 0 && old.activeMission == 6 && current.activeMission == 1) {
+			vars.splitID = "L7M7";
 			vars.doSplit = true;
+		}
 		
 		// If the settings for the misc. 100% stuff are activated.
 		if (settings["misc100%"]) {
@@ -498,8 +515,16 @@ split
 		}
 	}
 	
-	if (vars.doSplit)
-		return true;
+	if (vars.doSplit) {
+		// If an ID was set for the split earlier, it will only split if not in the "already split" list.
+		if (vars.splitID != null && !vars.splitsDone.Contains(vars.splitID)) {
+			vars.splitsDone.Add(vars.splitID);
+			return true;
+		}
+		else if (vars.splitID == null) {
+			return true;
+		}
+	}
 }
 
 start
