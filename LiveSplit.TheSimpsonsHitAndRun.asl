@@ -331,6 +331,7 @@ init
 	vars.justReset = false; // Used to keep track of when the code triggers a reset.
 	vars.originalOffset = timer.Run.Offset.TotalSeconds; // Stores the initial offset the user has set.
 	vars.splitsDone = new List<string>(); // Stores splits already done.
+	vars.lastSplitTimestamp = 0; // Keeps track of the time the last split was made.
 	
 	// Version checking.
 	switch (modules.First().ModuleMemorySize)
@@ -379,6 +380,9 @@ update
 	
 	// Stores the curent phase the timer is in, so we can use the old one on the next frame.
 	current.timerPhase = timer.CurrentPhase;
+
+	// Stores the current split index we're on, so we can use the old one on the next frame.
+	current.splitIndex = timer.CurrentSplitIndex;
 	
 	// Update all of the memory readings for the stats.
 	vars.statWatchers.UpdateAll(game);
@@ -396,7 +400,12 @@ update
 		// Resetting/changing variables.
 		vars.justReset = false;
 		vars.canStart = false;
+		vars.lastSplitTimestamp = 0;
 	}
+
+	// Sets the timestamp when we move to a new split, will work even if someone does it manually.
+	if (current.splitIndex > old.splitIndex)
+		vars.lastSplitTimestamp = Environment.TickCount;
 	
 	// Allows the timer to start automatically again when it won't cause issues.
 	if (!vars.canStart && current.newGame == 1)
@@ -407,6 +416,11 @@ split
 {
 	vars.doSplit = false;
 	vars.splitID = null;
+	vars.canSplitMissions = false;
+
+	// Activate the mission splits when 10 seconds have elapsed since the last one.
+	if (Environment.TickCount - vars.lastSplitTimestamp > 10000)
+		vars.canSplitMissions = true;
 	
 	// While the game is booting (state 0) the 100% values can be messed up so don't want to check then.
 	if (current.gameState > 0) {
@@ -516,8 +530,8 @@ split
 	}
 	
 	if (vars.doSplit) {
-		// If an ID was set for the split earlier, it will only split if not in the "already split" list.
-		if (vars.splitID != null && !vars.splitsDone.Contains(vars.splitID)) {
+		// If an ID was set for the split earlier, it will only split if not in the "already split" list and we're allowed to.
+		if (vars.canSplitMissions && vars.splitID != null && !vars.splitsDone.Contains(vars.splitID)) {
 			vars.splitsDone.Add(vars.splitID);
 			return true;
 		}
