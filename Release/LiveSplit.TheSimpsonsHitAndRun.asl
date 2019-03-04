@@ -49,6 +49,9 @@ state("Simpsons", "NonENGVarious")
 
 startup
 {
+	// Setting a lower refresh rate, we don't need 60fps accuracy and hopefully it helps out some people.
+	refreshRate = 30;
+
 	// Level 1 settings.
 	settings.Add("level1", false, "Level 1");
 	settings.Add("L1M0", false, "0: The Cola Caper (Tutorial Mission)", "level1");
@@ -156,6 +159,10 @@ startup
 	settings.Add("L6TimeTrial", false, "Time Trial", "L6Races");
 	settings.Add("L6CircuitRace", false, "Circuit", "L6Races");
 	settings.Add("L6CheckpointRace", false, "Checkpoint", "L6Races");
+	settings.Add("L6M2100%", false, "M2: Getting Down with the Clown (for 100%)", "l6100%");
+	settings.SetToolTip("L6M2100%",
+		@"Splits once the mission has actually been fully completed;
+only use this if your route involves initially skippping this mission.");
 	settings.Add("L6BM", false, "Bonus Mission: Milking the Pigs", "l6100%");
 	
 	// Level 7 settings.
@@ -330,6 +337,8 @@ init
 	vars.canStart = true; // The timer is allowed to start after the game has booted.
 	vars.justReset = false; // Used to keep track of when the code triggers a reset.
 	vars.originalOffset = timer.Run.Offset.TotalSeconds; // Stores the initial offset the user has set.
+	vars.splitsDone = new List<string>(); // Stores splits already done.
+	vars.lastSplitTimestamp = 0; // Keeps track of the time the last split was made.
 	
 	// Version checking.
 	switch (modules.First().ModuleMemorySize)
@@ -354,6 +363,7 @@ init
 	else {
 		foreach (var pointer in vars.statPointers) {
 			if (settings[pointer.Value]
+			|| (pointer.Value == "L6M2" && settings["L6M2100%"])
 			|| (pointer.Value == "L7M7" && settings["L7M7100%"])
 			|| (pointer.Value == "BonusMovie" && settings["bonusMovie"]))
 				filteredStatPointers.Add(pointer.Key, pointer.Value);
@@ -378,6 +388,9 @@ update
 	
 	// Stores the curent phase the timer is in, so we can use the old one on the next frame.
 	current.timerPhase = timer.CurrentPhase;
+
+	// Stores the current split index we're on, so we can use the old one on the next frame.
+	current.splitIndex = timer.CurrentSplitIndex;
 	
 	// Update all of the memory readings for the stats.
 	vars.statWatchers.UpdateAll(game);
@@ -387,6 +400,7 @@ update
 	// on the same frame as the auto-start, so this code needs to be repeated later.)
 	if (old.timerPhase != current.timerPhase && current.timerPhase == TimerPhase.NotRunning) {
 		timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
+		vars.splitsDone.Clear(); // Clear the list of already done splits.
 	}
 	
 	// Reset some stuff when the timer is started, so we don't need to rely on the start action in this script.
@@ -394,7 +408,12 @@ update
 		// Resetting/changing variables.
 		vars.justReset = false;
 		vars.canStart = false;
+		vars.lastSplitTimestamp = 0;
 	}
+
+	// Sets the timestamp when we move to a new split, will work even if someone does it manually.
+	if (current.splitIndex > old.splitIndex)
+		vars.lastSplitTimestamp = Environment.TickCount;
 	
 	// Allows the timer to start automatically again when it won't cause issues.
 	if (!vars.canStart && current.newGame == 1)
@@ -404,6 +423,12 @@ update
 split
 {
 	vars.doSplit = false;
+	vars.splitID = null;
+	vars.canSplitMissions = false;
+
+	// Activate the mission splits when 8 seconds have elapsed since the last one.
+	if (Environment.TickCount - vars.lastSplitTimestamp > 8000)
+		vars.canSplitMissions = true;
 	
 	// While the game is booting (state 0) the 100% values can be messed up so don't want to check then.
 	if (current.gameState > 0) {
@@ -417,8 +442,10 @@ split
 					onLevel1 = 1;
 				
 				// If the setting for splitting the mission we just finished is set, split!
-				if (settings["L"+(current.activeLevel+1)+"M"+(current.activeMission-onLevel1)])
+				if (settings["L"+(current.activeLevel+1)+"M"+(current.activeMission-onLevel1)]) {
+					vars.splitID = "L"+(current.activeLevel+1)+"M"+(current.activeMission-onLevel1);
 					vars.doSplit = true;
+				}
 			}
 		}
 		
@@ -427,8 +454,10 @@ split
 			// If we just moved a level higher and all of the missions have been done in the last level.
 			if (current.activeLevel == old.activeLevel+1 && old.activeMission >= 6) {
 				// If the setting for splitting the last mission on the level we just came from is set, split.
-				if (settings["level"+current.activeLevel] && settings["L"+(current.activeLevel)+"M7"])
+				if (settings["level"+current.activeLevel] && settings["L"+(current.activeLevel)+"M7"]) {
+					vars.splitID = "L"+(current.activeLevel)+"M7";
 					vars.doSplit = true;
+				}
 			}
 		}
 		
@@ -456,6 +485,14 @@ split
 				&& vars.statWatchers["L"+(current.activeLevel+1)+"CheckpointRace"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"CheckpointRace"].Old)
 					vars.doSplit = true;
 			}
+
+			// Some unique things for 100% in level 6.
+			if (current.activeLevel+1 == 6) {
+				// Split when "Getting Down with the Clown" is actually completed.
+				if (settings["L6M2100%"]
+				&& vars.statWatchers["L6M2"].Current > vars.statWatchers["L6M2"].Old)
+					vars.doSplit = true;
+			}
 			
 			// Some unique things for 100% in level 7.
 			if (current.activeLevel+1 == 7) {
@@ -468,17 +505,27 @@ split
 		
 		// Used to detect when a video file stops playing, so we can split after it's done if needed.
 		// The active level needs to be 1 higher than the one the FMV is played in, because in memory the game has already moved on to the next level.
-		if (old.videoPlaying == 1 && current.videoPlaying == 0 &&
-		((current.activeLevel+1 == 3 && settings["L2FMV"] && current.lastVideoLoaded == "fmv3.rmv")
-		|| (current.activeLevel+1 == 6 && settings["L5FMV"] && current.lastVideoLoaded == "fmv5.rmv")
-		|| (current.activeLevel+1 == 7 && settings["L6FMV"] && current.lastVideoLoaded == "fmv6.rmv"))) {
-			vars.doSplit = true;
+		if (old.videoPlaying == 1 && current.videoPlaying == 0) {
+			if (current.activeLevel+1 == 3 && settings["L2FMV"] && current.lastVideoLoaded == "fmv3.rmv") {
+				vars.splitID = "L2FMV";
+				vars.doSplit = true;
+			}
+			if (current.activeLevel+1 == 6 && settings["L5FMV"] && current.lastVideoLoaded == "fmv5.rmv") {
+				vars.splitID = "L5FMV";
+				vars.doSplit = true;
+			}
+			if (current.activeLevel+1 == 7 && settings["L6FMV"] && current.lastVideoLoaded == "fmv6.rmv") {
+				vars.splitID = "L6FMV";
+				vars.doSplit = true;
+			}
 		}
 
 		// Final split for all full-game categories, as soon as the final mission ends (which actually loops back around to L1M1).
 		if (settings["L7M7"]
-		&& old.activeLevel == 6 && current.activeLevel == 0 && old.activeMission == 6 && current.activeMission == 1)
+		&& old.activeLevel == 6 && current.activeLevel == 0 && old.activeMission == 6 && current.activeMission == 1) {
+			vars.splitID = "L7M7";
 			vars.doSplit = true;
+		}
 		
 		// If the settings for the misc. 100% stuff are activated.
 		if (settings["misc100%"]) {
@@ -498,8 +545,16 @@ split
 		}
 	}
 	
-	if (vars.doSplit)
-		return true;
+	if (vars.doSplit) {
+		// If an ID was set for the split earlier, it will only split if not in the "already split" list and we're allowed to.
+		if (vars.canSplitMissions && vars.splitID != null && !vars.splitsDone.Contains(vars.splitID)) {
+			vars.splitsDone.Add(vars.splitID);
+			return true;
+		}
+		else if (vars.splitID == null) {
+			return true;
+		}
+	}
 }
 
 start
@@ -553,6 +608,16 @@ reset
 		vars.justReset = true;
 		return true;
 	}
+}
+
+shutdown
+{
+	timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
+}
+
+exit
+{
+	timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
 }
 
 isLoading
