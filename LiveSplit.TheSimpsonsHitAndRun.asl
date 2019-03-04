@@ -159,6 +159,10 @@ startup
 	settings.Add("L6TimeTrial", false, "Time Trial", "L6Races");
 	settings.Add("L6CircuitRace", false, "Circuit", "L6Races");
 	settings.Add("L6CheckpointRace", false, "Checkpoint", "L6Races");
+	settings.Add("L6M2100%", false, "M2: Getting Down with the Clown (for 100%)", "l6100%");
+	settings.SetToolTip("L6M2100%",
+		@"Splits once the mission has actually been fully completed;
+only use this if your route involves initially skippping this mission.");
 	settings.Add("L6BM", false, "Bonus Mission: Milking the Pigs", "l6100%");
 	
 	// Level 7 settings.
@@ -359,6 +363,7 @@ init
 	else {
 		foreach (var pointer in vars.statPointers) {
 			if (settings[pointer.Value]
+			|| (pointer.Value == "L6M2" && settings["L6M2100%"])
 			|| (pointer.Value == "L7M7" && settings["L7M7100%"])
 			|| (pointer.Value == "BonusMovie" && settings["bonusMovie"]))
 				filteredStatPointers.Add(pointer.Key, pointer.Value);
@@ -478,6 +483,14 @@ split
 				// If the checkpoint race in the current level is done.
 				if (settings["L"+(current.activeLevel+1)+"CheckpointRace"]
 				&& vars.statWatchers["L"+(current.activeLevel+1)+"CheckpointRace"].Current > vars.statWatchers["L"+(current.activeLevel+1)+"CheckpointRace"].Old)
+					vars.doSplit = true;
+			}
+
+			// Some unique things for 100% in level 6.
+			if (current.activeLevel+1 == 6) {
+				// Split when "Getting Down with the Clown" is actually completed.
+				if (settings["L6M2100%"]
+				&& vars.statWatchers["L6M2"].Current > vars.statWatchers["L6M2"].Old)
 					vars.doSplit = true;
 			}
 			
