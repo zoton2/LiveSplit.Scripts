@@ -610,6 +610,16 @@ reset
 	}
 }
 
+shutdown
+{
+	timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
+}
+
+exit
+{
+	timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
+}
+
 isLoading
 {
 	// Load removing for most loading screens in the game.
