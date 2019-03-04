@@ -426,8 +426,8 @@ split
 	vars.splitID = null;
 	vars.canSplitMissions = false;
 
-	// Activate the mission splits when 10 seconds have elapsed since the last one.
-	if (Environment.TickCount - vars.lastSplitTimestamp > 10000)
+	// Activate the mission splits when 8 seconds have elapsed since the last one.
+	if (Environment.TickCount - vars.lastSplitTimestamp > 8000)
 		vars.canSplitMissions = true;
 	
 	// While the game is booting (state 0) the 100% values can be messed up so don't want to check then.
