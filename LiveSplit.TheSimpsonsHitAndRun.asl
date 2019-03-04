@@ -49,6 +49,9 @@ state("Simpsons", "NonENGVarious")
 
 startup
 {
+	// Setting a lower refresh rate, we don't need 60fps accuracy and hopefully it helps out some people.
+	refreshRate = 30;
+
 	// Level 1 settings.
 	settings.Add("level1", false, "Level 1");
 	settings.Add("L1M0", false, "0: The Cola Caper (Tutorial Mission)", "level1");
