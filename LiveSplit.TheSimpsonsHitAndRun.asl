@@ -329,13 +329,28 @@ Only useful for New Game Plus categories.");
 		{0x1084, "L7BM"},
 		{0x704, "BonusMovie"}
 	};
+
+	Action onReset = () => {
+		timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
+		vars.splitsDone.Clear(); // Clear the list of already done splits.
+		vars.lastSplitTimestamp = 0;
+	};
+	vars.onReset = onReset;
+
+	Action<float> onStart = (offset) => {
+		vars.canStart = false;
+		if (offset != -1.0F) {
+			vars.originalOffset = timer.Run.Offset.TotalSeconds; // Stores the initial offset the user has set.
+			timer.Run.Offset = TimeSpan.FromSeconds(offset);
+		}
+	};
+	vars.onStart = onStart;
 }
 
 init
 {
 	// Declaring variables.
 	vars.canStart = true; // The timer is allowed to start after the game has booted.
-	vars.justReset = false; // Used to keep track of when the code triggers a reset.
 	vars.originalOffset = timer.Run.Offset.TotalSeconds; // Stores the initial offset the user has set.
 	vars.splitsDone = new List<string>(); // Stores splits already done.
 	vars.lastSplitTimestamp = 0; // Keeps track of the time the last split was made.
@@ -395,20 +410,16 @@ update
 	// Update all of the memory readings for the stats.
 	vars.statWatchers.UpdateAll(game);
 
-	// Reset some stuff when the timer is reset, either manually or automatically.
-	// (In most cases for this game these don't happen on auto-reset though, due to it happening
-	// on the same frame as the auto-start, so this code needs to be repeated later.)
+	// Runs when timer is reset manually, as long as the state changes for more than 1 frame.
+	// (In most cases for this game this don't happen on auto-reset though, due to it happening
+	// on the same frame as the auto-start).
 	if (old.timerPhase != current.timerPhase && current.timerPhase == TimerPhase.NotRunning) {
-		timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
-		vars.splitsDone.Clear(); // Clear the list of already done splits.
+		vars.onReset();
 	}
 	
-	// Reset some stuff when the timer is started, so we don't need to rely on the start action in this script.
-	if (((old.timerPhase != current.timerPhase && old.timerPhase != TimerPhase.Paused) || vars.justReset) && current.timerPhase == TimerPhase.Running) {
-		// Resetting/changing variables.
-		vars.justReset = false;
-		vars.canStart = false;
-		vars.lastSplitTimestamp = 0;
+	// Runs when reset manually, so we don't need to rely on the start action in this script.
+	if (old.timerPhase != current.timerPhase && old.timerPhase != TimerPhase.Paused && current.timerPhase == TimerPhase.Running) {
+		vars.onStart(-1.0F); // Temporary solution because we have to pass something.
 	}
 
 	// Sets the timestamp when we move to a new split, will work even if someone does it manually.
@@ -564,23 +575,20 @@ start
 
 	// For "New Game", done on the same frame as the reset, when a new game is started and the FMV is loaded in.
 	if (current.newGame == 0 && current.mainMenu == 1 && current.lastVideoLoaded == "fmv1a.rmv") {
-		vars.originalOffset = timer.Run.Offset.TotalSeconds; // Stores the initial offset the user has set.
-		timer.Run.Offset = TimeSpan.FromSeconds(0);
+		vars.onStart(0.0F); // Offset to start the timer at.
 		return true;
 	}
 
 	// For "Resume Game" using the community save, done on the same frame as the reset, we need to check that we're (probably) at the start of a new run.
 	else if (current.newGame == 1 && current.coinsTotal == 0 && current.activeMission == 0 && current.activeLevel == 0
 		&& current.mainMenu == 1 && current.gameState == 8 && old.gameState == 2) {
-		vars.originalOffset = timer.Run.Offset.TotalSeconds; // Stores the initial offset the user has set.
-		timer.Run.Offset = TimeSpan.FromSeconds(40.9);
+		vars.onStart(40.9F); // Offset to start the timer at.
 		return true;
 	}
 
 	// For "Resume Game" using any save, as long as the setting is enabled, done on the same frame as the reset.
 	else if (settings["startNG+"] && current.newGame == 1 && current.mainMenu == 1 && current.gameState == 2 && old.resumeGame == 0 && current.resumeGame > 0) {
-		vars.originalOffset = timer.Run.Offset.TotalSeconds; // Stores the initial offset the user has set.
-		timer.Run.Offset = TimeSpan.FromSeconds(0);
+		vars.onStart(0.0F); // Offset to start the timer at.
 		return true;
 	}
 }
@@ -589,35 +597,32 @@ reset
 {
 	// For "New Game", done on the same frame as the start split, when a new game is started and the FMV is loaded in.
 	if (old.newGame > current.newGame && current.mainMenu == 1 && current.lastVideoLoaded == "fmv1a.rmv") {
-		timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
-		vars.justReset = true;
+		vars.onReset();
 		return true;
 	}
 
 	// For "Resume Game" using the community save, done on the same frame as the start split, we need to check that we're (probably) at the start of a new run.
 	else if (current.newGame == 1 && current.coinsTotal == 0 && current.activeMission == 0 && current.activeLevel == 0
 		&& current.mainMenu == 1 && current.gameState == 8 && old.gameState == 2) {
-		timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
-		vars.justReset = true;
+		vars.onReset();
 		return true;
 	}
 	
 	// For "Resume Game" using any save, as long as the setting is enabled, done on the same frame as the start split.
 	else if (settings["resetNG+"] && current.newGame == 1 && current.mainMenu == 1 && current.gameState == 2 && old.resumeGame == 0 && current.resumeGame > 0) {
-		timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
-		vars.justReset = true;
+		vars.onReset();
 		return true;
 	}
 }
 
 shutdown
 {
-	timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
+	vars.onReset();
 }
 
 exit
 {
-	timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
+	vars.onReset();
 }
 
 isLoading
