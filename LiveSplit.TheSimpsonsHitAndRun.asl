@@ -377,10 +377,13 @@ init
 		filteredStatPointers = vars.statPointers;
 	else {
 		foreach (var pointer in vars.statPointers) {
-			if (settings[pointer.Value]
-			|| (pointer.Value == "L6M2" && settings["L6M2100%"])
-			|| (pointer.Value == "L7M7" && settings["L7M7100%"])
-			|| (pointer.Value == "BonusMovie" && settings["bonusMovie"]))
+			if ((pointer.Value.Contains("BM") && settings[pointer.Value]) // Bonus Missions
+			|| (pointer.Value.Contains("TimeTrial") && settings[pointer.Value]) // Time Trial
+			|| (pointer.Value.Contains("CircuitRace") && settings[pointer.Value]) // Circuit Race
+			|| (pointer.Value.Contains("CheckpointRace") && settings[pointer.Value]) // Checkpoint Race
+			|| (pointer.Value == "L6M2" && settings["L6M2100%"]) // Extra L6M2 100% Split
+			|| (pointer.Value == "L7M7" && settings["L7M7100%"]) // Extra L7M7 100% Split
+			|| (pointer.Value == "BonusMovie" && settings["bonusMovie"])) // Bonus Movie Ticket
 				filteredStatPointers.Add(pointer.Key, pointer.Value);
 		}
 	}
