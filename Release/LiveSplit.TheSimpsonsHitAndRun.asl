@@ -1,5 +1,6 @@
 // Compatibility:
-// > This script works with the popular "FairLight" No-CD and also some other No-CDs from non-English versions. It will check the user is using one of these before doing the update/start/reset/split/isLoading functions.
+// > This script works with the popular "FairLight" No-CD and also some other No-CDs from non-English versions.
+//   It will check the user is using one of these before doing the update/start/reset/split/isLoading functions.
 
 // Notes:
 // > Normal missions will split even if you don't complete them fully or are playing from a save file,
@@ -182,11 +183,11 @@ even if the mission was completed before");
 	settings.Add("L7TimeTrial", false, "Time Trial", "L7Races");
 	settings.Add("L7CircuitRace", false, "Circuit", "L7Races");
 	settings.Add("L7CheckpointRace", false, "Checkpoint", "L7Races");
-	settings.Add("L7BM", false, "Bonus Mission: Flaming Tires", "l7100%");
 	settings.Add("L7M7100%", false, "M7: Alien \"Auto\"topsy Part III (for 100%)", "l7100%");
 	settings.SetToolTip("L7M7100%",
 		@"Splits once the mission has been completed but before the final FMV starts playing
 if the mission was never completed before; use this one instead of the one above for 100%.");
+	settings.Add("L7BM", false, "Bonus Mission: Flaming Tires", "l7100%");
 	
 	// Add the header for misc. 100% stuff.
 	settings.Add("misc100%", false, "Miscellaneous 100% Stuff");
@@ -330,13 +331,7 @@ Only useful for New Game Plus categories.");
 		{0x704, "BonusMovie"}
 	};
 
-	Action onReset = () => {
-		timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
-		vars.splitsDone.Clear(); // Clear the list of already done splits.
-		vars.lastSplitTimestamp = 0;
-	};
-	vars.onReset = onReset;
-
+	// Custom function used to change things when the splits start.
 	Action<float> onStart = (offset) => {
 		vars.canStart = false;
 		if (offset != -1.0F) {
@@ -345,6 +340,14 @@ Only useful for New Game Plus categories.");
 		}
 	};
 	vars.onStart = onStart;
+
+	// Customer function used to change things when the splits reset.
+	Action onReset = () => {
+		timer.Run.Offset = TimeSpan.FromSeconds(vars.originalOffset); // Reset the splits offset back to their original.
+		vars.splitsDone.Clear(); // Clear the list of already done splits.
+		vars.lastSplitTimestamp = 0;
+	};
+	vars.onReset = onReset;
 }
 
 init
@@ -377,10 +380,13 @@ init
 		filteredStatPointers = vars.statPointers;
 	else {
 		foreach (var pointer in vars.statPointers) {
-			if (settings[pointer.Value]
-			|| (pointer.Value == "L6M2" && settings["L6M2100%"])
-			|| (pointer.Value == "L7M7" && settings["L7M7100%"])
-			|| (pointer.Value == "BonusMovie" && settings["bonusMovie"]))
+			if ((pointer.Value.Contains("BM") && settings[pointer.Value]) // Bonus Missions
+			|| (pointer.Value.Contains("TimeTrial") && settings[pointer.Value]) // Time Trial
+			|| (pointer.Value.Contains("CircuitRace") && settings[pointer.Value]) // Circuit Race
+			|| (pointer.Value.Contains("CheckpointRace") && settings[pointer.Value]) // Checkpoint Race
+			|| (pointer.Value == "L6M2" && settings["L6M2100%"]) // Extra L6M2 100% Split
+			|| (pointer.Value == "L7M7" && settings["L7M7100%"]) // Extra L7M7 100% Split
+			|| (pointer.Value == "BonusMovie" && settings["bonusMovie"])) // Bonus Movie Ticket
 				filteredStatPointers.Add(pointer.Key, pointer.Value);
 		}
 	}
@@ -413,14 +419,12 @@ update
 	// Runs when timer is reset manually, as long as the state changes for more than 1 frame.
 	// (In most cases for this game this don't happen on auto-reset though, due to it happening
 	// on the same frame as the auto-start).
-	if (old.timerPhase != current.timerPhase && current.timerPhase == TimerPhase.NotRunning) {
+	if (old.timerPhase != current.timerPhase && current.timerPhase == TimerPhase.NotRunning)
 		vars.onReset();
-	}
 	
 	// Runs when reset manually, so we don't need to rely on the start action in this script.
-	if (old.timerPhase != current.timerPhase && old.timerPhase != TimerPhase.Paused && current.timerPhase == TimerPhase.Running) {
+	if (old.timerPhase != current.timerPhase && old.timerPhase != TimerPhase.Paused && current.timerPhase == TimerPhase.Running)
 		vars.onStart(-1.0F); // Temporary solution because we have to pass something.
-	}
 
 	// Sets the timestamp when we move to a new split, will work even if someone does it manually.
 	if (current.splitIndex > old.splitIndex)
