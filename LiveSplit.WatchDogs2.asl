@@ -93,6 +93,7 @@ init
 			version = "v1.011.174.6.1009368";
 			break;
 		case 202059776:
+		case 356388864: // Needs fully testing!
 			version = "v1.017.189.2.1088394";
 			break;
 	}
