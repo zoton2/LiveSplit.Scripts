@@ -56,24 +56,21 @@ state("WatchDogs2", "v1.011.174.6.1009368")
 {
 	int loading1 : "Disrupt_64.dll", 0x3E69E1C;
 	int loading2 : "Disrupt_64.dll", 0x3E13B34;
-	
-	int followers: "Disrupt_64.dll", 0x3E157F0, 0xD0, 0x40, 0xD0, 0x80, 0x38, 0x30, 0xC0;
+	int followers : "Disrupt_64.dll", 0x3E157F0, 0xD0, 0x40, 0xD0, 0x80, 0x38, 0x30, 0xC0;
 }
 
 state("WatchDogs2", "v1.017.189.2.1088394")
 {
 	int loading1 : "Disrupt_64.dll", 0x401E824;
 	int loading2 : "Disrupt_64.dll", 0x3FC34B4;
-	
-	int followers: "Disrupt_64.dll", 0x401AC10, 0xC8, 0x8, 0x168, 0xE0, 0xC0;
+	int followers : "Disrupt_64.dll", 0x401AC10, 0xC8, 0x8, 0x168, 0xE0, 0xC0;
 }
 
-startup {
-	
-	settings.Add("Buy Pants", true, "Splits after buying pants at beginning of game");
-	
+startup
+{
+	settings.Add("BuyPants", true, "Split for buying pants");
+	settings.SetToolTip("BuyPants", "Splits after buying pants at the beginning of the game.");
 }
-
 
 init
 {
@@ -113,46 +110,33 @@ init
 isLoading
 {
 	if (version != "")
-		return current.loading1 > 0 || current.loading2 > 0;		
+		return current.loading1 > 0 || current.loading2 > 0;
 }
 
-
-split{  
-
-	if(settings["Buy Pants"] && current.followers==old.followers+2200) //Buying Pants Finished
+split
+{
+	if (settings["Buy Pants"] && current.followers == old.followers + 2200) // Buying Pants Finished
 		return true;
-
-	if(current.followers==old.followers+46000) //Cyberdriver Finished
+	if (current.followers == old.followers + 46000) // Cyberdriver Finished
 		return true;
-
-	if(current.followers==old.followers+96000) //False Profits Finished
+	if (current.followers == old.followers + 96000) // False Profits Finished
 		return true;
-
-	if(current.followers==old.followers+87000) //Haum Sweet Haum Finished
+	if (current.followers == old.followers + 87000) // Haum Sweet Haum Finished
 		return true;
-	
-	if(current.followers==old.followers+200000) //Looking Glass or Limp Nudle Finished
+	if (current.followers == old.followers + 200000) // Looking Glass or Limp Nudle Finished
 		return true;
-
-	if(current.followers==old.followers+233000) //Hacker War Finished
+	if (current.followers == old.followers + 233000) // Hacker War Finished
 		return true;
-	
-	if(current.followers==old.followers+242000) //W4tched Finished
+	if (current.followers == old.followers + 242000) // W4tched Finished
 		return true;
-	
-	if(current.followers==old.followers+234900) //Eye for an Eye Finished
+	if (current.followers == old.followers + 234900) // Eye for an Eye Finished
 		return true;
-
-	if(current.followers==old.followers+364000) //Hack teh World Finished
+	if (current.followers == old.followers + 364000) // Hack teh World Finished
 		return true;
-
-	if(current.followers==old.followers+542400) //Shanghaied Finished
+	if (current.followers == old.followers + 542400) // Shanghaied Finished
 		return true;
-
-	if(current.followers==old.followers+402800) //Power to the Sheeple Finished
+	if (current.followers == old.followers + 402800) // Power to the Sheeple Finished
 		return true;
-
-	if(current.followers==old.followers+464000) //Robot Wars Finished
+	if (current.followers == old.followers + 464000) // Robot Wars Finished
 		return true;
-	
 }
