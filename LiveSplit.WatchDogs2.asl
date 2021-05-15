@@ -57,6 +57,7 @@ state("WatchDogs2", "v1.011.174.6.1009368")
 	int loading1 : "Disrupt_64.dll", 0x3E69E1C;
 	int loading2 : "Disrupt_64.dll", 0x3E13B34;
 	int followers : "Disrupt_64.dll", 0x3E157F0, 0xD0, 0x40, 0xD0, 0x80, 0x38, 0x30, 0xC0;
+	int LineId: "Disrupt_64.dll", 0x3C82108, 0x288, 0x90, 0x190, 0xB8, 0x9E8;
 }
 
 state("WatchDogs2", "v1.017.189.2.1088394")
@@ -64,12 +65,33 @@ state("WatchDogs2", "v1.017.189.2.1088394")
 	int loading1 : "Disrupt_64.dll", 0x401E824;
 	int loading2 : "Disrupt_64.dll", 0x3FC34B4;
 	int followers : "Disrupt_64.dll", 0x401AC10, 0xC8, 0x8, 0x168, 0xE0, 0xC0;
+	int LineId: "Disrupt_64.dll", 0x400FA90, 0x28;
 }
 
 startup
 {
-	settings.Add("BuyPants", true, "Split for buying pants");
+	settings.Add("BuyPants", false, "Split for buying pants");
 	settings.SetToolTip("BuyPants", "Splits after buying pants at the beginning of the game.");
+	
+	Action<string> logDebug = (text) => {
+        	print("[Watch_Dogs 2 Autosplitter | DEBUG] "+ text);
+    		};
+   		vars.logDebug = logDebug;
+	vars.lastSplitTime = null;
+	Func<bool> isNotDoubleSplit = () => {
+		bool isDoubleSplit = false;
+		if (vars.lastSplitTime != null) {
+			System.TimeSpan ts = System.DateTime.Now - vars.lastSplitTime;
+			if (ts.TotalSeconds < 15) {
+				isDoubleSplit = true;
+				vars.logDebug("Double split detected!");
+			}
+		}
+		vars.lastSplitTime = System.DateTime.Now;
+		return !isDoubleSplit;
+	};
+	vars.isNotDoubleSplit = isNotDoubleSplit;
+	
 }
 
 init
@@ -113,10 +135,22 @@ isLoading
 		return current.loading1 > 0 || current.loading2 > 0;
 }
 
+start{
+
+	if (vars.stopwatch.ElapsedMilliseconds > 6000)
+		vars.stopwatch.Reset();
+	if (current.LineId == 693964)
+		vars.stopwatch.Start();
+	if (current.LineId == 693964 && vars.stopwatch.ElapsedMilliseconds > 5066.67)
+		return true;	
+}
+
 split
 {
 	if (settings["Buy Pants"] && current.followers == old.followers + 2200) // Buying Pants Finished
 		return true;
+	if(old.LineId == 658785 && current.LineId > 100000) //Walk in the Park Finished  
+		return vars.isNotDoubleSplit();
 	if (current.followers == old.followers + 46000) // Cyberdriver Finished
 		return true;
 	if (current.followers == old.followers + 96000) // False Profits Finished
