@@ -73,6 +73,8 @@ startup
 	settings.Add("BuyPants", false, "Split for buying pants");
 	settings.SetToolTip("BuyPants", "Splits after buying pants at the beginning of the game.");
 	
+	vars.stopwatch = new Stopwatch();
+	
 	Action<string> logDebug = (text) => {
         	print("[Watch_Dogs 2 Autosplitter | DEBUG] "+ text);
     		};
