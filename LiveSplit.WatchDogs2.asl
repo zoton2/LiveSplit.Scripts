@@ -92,8 +92,7 @@ startup
 		vars.lastSplitTime = System.DateTime.Now;
 		return !isDoubleSplit;
 	};
-	vars.isNotDoubleSplit = isNotDoubleSplit;
-	
+	vars.isNotDoubleSplit = isNotDoubleSplit;	
 }
 
 init
@@ -137,10 +136,15 @@ isLoading
 		return current.loading1 > 0 || current.loading2 > 0;
 }
 
-start{
-
-	if (vars.stopwatch.ElapsedMilliseconds > 6000)
+update
+{
+    	if (vars.stopwatch.ElapsedMilliseconds > 10000)
 		vars.stopwatch.Reset();
+	if (old.LineId == 658798)
+		vars.stopwatch.Start();
+
+start
+{
 	if (current.LineId == 693964)
 		vars.stopwatch.Start();
 	if (current.LineId == 693964 && vars.stopwatch.ElapsedMilliseconds > 5066.67)
@@ -151,7 +155,7 @@ split
 {
 	if (settings["Buy Pants"] && current.followers == old.followers + 2200) // Buying Pants Finished
 		return true;
-	if(old.LineId == 658785 && current.LineId > 100000) //Walk in the Park Finished  
+	if (old.LineId == 658785 && vars.stopwatch.ElapsedMilliseconds > 600) //Walk in the Park Finished  
 		return vars.isNotDoubleSplit();
 	if (current.followers == old.followers + 46000) // Cyberdriver Finished
 		return true;
