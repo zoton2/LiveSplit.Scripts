@@ -142,6 +142,7 @@ update
 		vars.stopwatch.Reset();
 	if (old.LineId == 658798)
 		vars.stopwatch.Start();
+}
 
 start
 {
