@@ -9,9 +9,10 @@
 
 ## What is autosplit?
 
-*(All autospliting is based on follower counts.)*
-- Splits for all main missions.
-- Split for buying pants at the start of the game, if enabled in settings.
+*(All autospliting is based on follower counts, except for "Walk in the Park", which is based on subtitles, so may not work if the game text is not set to English.)*
+- Starting split (once you gain control of Marcus).
+- Splits for all main missions, including "Walk in the Park".
+- Split for buying pants at the start of the game, if enabled in settings (default is disabled).
 
 ## Versions supported
 
