@@ -155,7 +155,7 @@ start
 
 split
 {
-	if (settings["Buy Pants"] && current.followers == old.followers + 2200) // Buying Pants Finished
+	if (settings["BuyPants"] && current.followers == old.followers + 2200) // Buying Pants Finished
 		return true;
 	if (old.lineId == 658785 && vars.stopwatch.ElapsedMilliseconds > 600) // Walk in the Park Finished
 		return vars.isNotDoubleSplit();
