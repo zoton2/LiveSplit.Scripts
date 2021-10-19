@@ -15,6 +15,7 @@ startup
 {
 	// Set the autosplitter refresh rate (lower = less CPU and less accurate, higher = more CPU usage and more accurate) default: 60
 	refreshRate = 30;
+
 	
 	// List of mission memory addresses (for Steam, see below for where offsets get added).
 	vars.missionAddresses = new Dictionary<int, string> {
@@ -138,6 +139,13 @@ init
 	
 	// Detects current game version if Steam.
 	if (modules.First().ModuleMemorySize == 6197248)
+	{
+		version = "Steam";
+		vars.offset = 0;
+	}
+
+	// Detect Steam version without SteamStub
+	else if (modules.First().ModuleMemorySize == 5836800)
 	{
 		version = "Steam";
 		vars.offset = 0;
