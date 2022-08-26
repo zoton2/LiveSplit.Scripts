@@ -30,6 +30,9 @@ state("Simpsons", "FairLightENG")
 	int boothScreens : 0x2C8450, 0x34; // If in a phone booth or on a outfit/car buying screen.
 	int resumeGame : 0x2C8998; // 0 when on main menu, goes to a high number when Resume Game is pressed.
 	int interiorState : 0x2C8FF8, 0x4; // Interior State: 0 - None; 1 - Entering; 2 - Exiting; 3 - Inside. Credit EnAppelsin#6509.
+	int loadingRequestHead : 0x2C8FF4, 0x73A4; // Loading Manager -> mRequestHead. Credit EnAppelsin#6509.
+	int loadingRequestTail : 0x2C8FF4, 0x73A8; // Loading Manager -> mRequestTail. Credit EnAppelsin#6509.
+	int isLoading : 0x2C8FF4, 0x73AC; // Loading Manager -> mLoading. Credit EnAppelsin#6509.
 }
 
 state("Simpsons", "NonENGVarious")
@@ -48,6 +51,9 @@ state("Simpsons", "NonENGVarious")
 	int boothScreens : 0x2C8410, 0x34; // If in a phone booth or on a outfit/car buying screen.
 	int resumeGame : 0x2C8958; // 0 when on main menu, goes to a high number when Resume Game is pressed.
 	int interiorState : 0x2C8FB8, 0x4; // Interior State: 0 - None; 1 - Entering; 2 - Exiting; 3 - Inside. Credit EnAppelsin#6509.
+	int loadingRequestHead : 0x2C8FB4, 0x73A4; // Loading Manager -> mRequestHead. Credit EnAppelsin#6509.
+	int loadingRequestTail : 0x2C8FB4, 0x73A8; // Loading Manager -> mRequestTail. Credit EnAppelsin#6509.
+	int isLoading : 0x2C8FB4, 0x73AC; // Loading Manager -> mLoading. Credit EnAppelsin#6509.
 }
 
 startup
@@ -637,5 +643,5 @@ isLoading
 	return current.gameState == 8
 	|| (current.gameState == 10 && current.notLoading == 0 && current.paused == 0 && current.boothScreens == 0)
 	|| (current.gameState == 2 && current.mainMenu == 0)
-	|| (current.interiorState == 1 || current.interiorState == 2);
+	|| ((current.interiorState == 1 || current.interiorState == 2) && (current.isLoading == 1 || current.loadingRequestHead != current.loadingRequestTail));
 }
