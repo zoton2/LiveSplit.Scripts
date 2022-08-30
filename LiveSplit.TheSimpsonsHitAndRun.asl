@@ -8,13 +8,11 @@
 
 state("Simpsons")
 {
-	// A horrible way to check, but hopefully only temporary (future note: apparently not).
-	// If you are playing on the English version, this is "american".
-	// (No, this is not the language, but the string of a costume in the game.)
-	string8 verCheck : 0x24AB28;
+	// Credits Lucas Cardellini
+	uint verCheck : 0x193FFF;
 }
 
-state("Simpsons", "FairLightENG")
+state("Simpsons", "ReleaseEnglish")
 {
 	// Some basic non-stat memory addresses are stored here.
 	int gameState : 0x2C9014, 0xC; // Can be a few different numbers to do with the state the game is currently in.
@@ -35,7 +33,7 @@ state("Simpsons", "FairLightENG")
 	int isLoading : 0x2C8FF4, 0x73AC; // Loading Manager -> mLoading. Credit EnAppelsin#6509.
 }
 
-state("Simpsons", "NonENGVarious")
+state("Simpsons", "ReleaseInternational")
 {
 	// Some basic non-stat memory addresses are stored here.
 	int gameState : 0x2C8FD4, 0xC; // Can be a few different numbers to do with the state the game is currently in.
@@ -54,6 +52,27 @@ state("Simpsons", "NonENGVarious")
 	int loadingRequestHead : 0x2C8FB4, 0x73A4; // Loading Manager -> mRequestHead. Credit EnAppelsin#6509.
 	int loadingRequestTail : 0x2C8FB4, 0x73A8; // Loading Manager -> mRequestTail. Credit EnAppelsin#6509.
 	int isLoading : 0x2C8FB4, 0x73AC; // Loading Manager -> mLoading. Credit EnAppelsin#6509.
+}
+
+state("Simpsons", "BestSellersSeries")
+{
+	// Some basic non-stat memory addresses are stored here.
+	int gameState : 0x2C900C, 0xC; // Can be a few different numbers to do with the state the game is currently in.
+	int notLoading : 0x2C9010, 0x1D58; // 0 if loading, 1 if not.
+	int paused : 0x2C8420, 0x18; // If in the pause menu or not.
+	int mainMenu : 0x2C9010, 0x1A18; // If on the main menu or not.
+	string11 lastVideoLoaded : 0x2C8978, 0x54, 0x14, 0xF; // File name of the last video file the game loaded.
+	int videoPlaying : "binkw32.dll", 0x6521C; // If a video is currently playing or not.
+	int newGame : 0x2C8424, 0x6C; // Turns to 0 when a new game is started and changes to 1 when the first level is loaded.
+	int coinsTotal : 0x2C897C, 0x111C; // L O D S of E M O N E, what's that spell? Loadsamoney! (probably)
+	int activeMission : 0x2C897C, 0x110C; // 0-6 (or 0-7 on level 1 cuz tutorial); doesn't change for bonus missions/races.
+	int activeLevel : 0x2C897C, 0x1108; // 0-6 depending on what level you are on.
+	int boothScreens : 0x2C8448, 0x34; // If in a phone booth or on a outfit/car buying screen.
+	int resumeGame : 0x2C8990; // 0 when on main menu, goes to a high number when Resume Game is pressed.
+	int interiorState : 0x2C8FF0, 0x4; // Interior State: 0 - None; 1 - Entering; 2 - Exiting; 3 - Inside. Credit EnAppelsin#6509.
+	int loadingRequestHead : 0x2C8FEC, 0x73A4; // Loading Manager -> mRequestHead. Credit EnAppelsin#6509.
+	int loadingRequestTail : 0x2C8FEC, 0x73A8; // Loading Manager -> mRequestTail. Credit EnAppelsin#6509.
+	int isLoading : 0x2C8FEC, 0x73AC; // Loading Manager -> mLoading. Credit EnAppelsin#6509.
 }
 
 startup
@@ -366,18 +385,18 @@ init
 	vars.splitsDone = new List<string>(); // Stores splits already done.
 	vars.lastSplitTimestamp = 0; // Keeps track of the time the last split was made.
 	
-	// Version checking.
-	switch (modules.First().ModuleMemorySize)
+	// Version checking. Credits Lucas Cardellini
+	switch (current.verCheck)
 	{
-		case 2965504:
-			if (current.verCheck == "american")
-				version = "FairLightENG";
-			else
-				version = "NonENGVarious"; // German No-CD
+		case 0xFAE804C5: // Demo
+		case 0xC985ED33: // Release International
+			version = "ReleaseInternational";
 			break;
-		case 2964216: // French No-CD
-		case 3993600: // Spanish No-CD
-			version = "NonENGVarious";
+		case 0x4B8B2274: // Release English
+			version = "ReleaseEnglish";
+			break;
+		case 0xFC468D05: // Best Sellers Series
+			version = "BestSellersSeries";
 			break;
 	}
 	
@@ -402,10 +421,18 @@ init
 	// Goes through the dictionary above and adds those pointers with the base address to the memory watcher list.
 	vars.statWatchers = new MemoryWatcherList();
 	foreach (var pointer in filteredStatPointers) {
-		if (version == "NonENGVarious")
-			vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8944, pointer.Key)) { Name = pointer.Value });
-		else
-			vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, pointer.Key)) { Name = pointer.Value });
+		switch (version)
+		{
+			case "ReleaseEnglish":
+				vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, pointer.Key)) { Name = pointer.Value });
+				break;
+			case "ReleaseInternational":
+				vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8944, pointer.Key)) { Name = pointer.Value });
+				break;
+			case "BestSellersSeries":
+				vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C897C, pointer.Key)) { Name = pointer.Value });
+				break;
+		}
 	}
 }
 
