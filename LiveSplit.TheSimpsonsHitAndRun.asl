@@ -386,19 +386,15 @@ init
 	vars.lastSplitTimestamp = 0; // Keeps track of the time the last split was made.
 	
 	// Version checking. Credits Lucas Cardellini
-	switch (current.verCheck)
-	{
-		case 0xFAE804C5: // Demo
-		case 0xC985ED33: // Release International
-			version = "ReleaseInternational";
-			break;
-		case 0x4B8B2274: // Release English
-			version = "ReleaseEnglish";
-			break;
-		case 0xFC468D05: // Best Sellers Series
-			version = "BestSellersSeries";
-			break;
-	}
+	uint ver = current.verCheck;
+	if (ver == 0xFAE804C5 || ver == 0xC985ED33)		// Demo or Release International
+		version = "ReleaseInternational";
+	else if (ver == 0x4B8B2274)						// Release English
+		version = "ReleaseEnglish";
+	else if (ver == 0xFC468D05)						// Best Sellers Series
+		version = "BestSellersSeries";
+	else											// Unknown version
+		print("Unknown version: " + ver);
 	
 	// If the 100% final split is enabled or we need to calculate percentage, all the pointers
 	// need to be added. Otherwise, we can just add the ones applicable to save on resources.
