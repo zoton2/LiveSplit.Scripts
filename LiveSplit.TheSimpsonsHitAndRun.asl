@@ -421,10 +421,18 @@ init
 	// Goes through the dictionary above and adds those pointers with the base address to the memory watcher list.
 	vars.statWatchers = new MemoryWatcherList();
 	foreach (var pointer in filteredStatPointers) {
-		if (version == "ReleaseInternational")
-			vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8944, pointer.Key)) { Name = pointer.Value });
-		else
-			vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, pointer.Key)) { Name = pointer.Value });
+		switch (version)
+		{
+			case "ReleaseEnglish":
+				vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8984, pointer.Key)) { Name = pointer.Value });
+				break;
+			case "ReleaseInternational":
+				vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C8944, pointer.Key)) { Name = pointer.Value });
+				break;
+			case "BestSellersSeries":
+				vars.statWatchers.Add(new MemoryWatcher<byte>(new DeepPointer(0x2C897C, pointer.Key)) { Name = pointer.Value });
+				break;
+		}
 	}
 }
 
