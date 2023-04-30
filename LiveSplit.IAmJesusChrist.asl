@@ -1,3 +1,7 @@
+// Some of this script requires the use of the "asl-help" library.
+// This will be loaded automatically if using this script from within the splits editor.
+// https://github.com/just-ero/asl-help
+
 state("Level1")
 {
   // unknown/default version
