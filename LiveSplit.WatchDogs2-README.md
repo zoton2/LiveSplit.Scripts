@@ -9,12 +9,13 @@
 
 ## What is autosplit?
 
-*(All autospliting is based on percentage for your current save/playthrough, except for starting split, "Walk in the Park," and "Sunday Schooled 1," which are based on subtitles)*
-- Must have No Compromise and Human Conditions DLC uninstalled for the percentages to match up with the atuosplitter script. Must also follow the speedrun route in the WR.
+*(All autospliting is based on the percentage for your current save/playthrough, except for the starting split, "Walk in the Park", and "Sunday Schooled 1", which are based on subtitles.)*
+- Must have No Compromise and Human Conditions DLC uninstalled for the percentages to match up with the autosplitter script. Must also follow the speedrun route in the WR.
   
 - Starting split (once you gain control of Marcus).
 - Splits for most individual main missions, and has options to enable/disable them.
-- Splits for "Walk in the Park",  "Sunday Schooled", and "Mark Up" if enabled in settings (default is disabled). "Walk in the Park" and "Sunday Schooled 1" do not always split properly due to subtitles being skipped. 
+- Splits for "Walk in the Park", "Sunday Schooled" and "Mark Up" if enabled in settings (default is disabled).
+  - **"Walk in the Park" and "Sunday Schooled 1" do not always split properly due to subtitles being skipped.**
 - Still have to manual split for the last split when completing Motherload (last mission).
   
 Does not support splitting for these individual missions/cutscenes & calls:
