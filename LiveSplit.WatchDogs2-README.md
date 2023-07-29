@@ -9,10 +9,29 @@
 
 ## What is autosplit?
 
-*(All autospliting is based on follower counts, except for "Walk in the Park", which is based on subtitles, so may not work if the game text is not set to English.)*
+*(All autospliting is based on the percentage for your current save/playthrough, except for the starting split, "Walk in the Park", and "Sunday Schooled 1", which are based on subtitles.)*
+- Must have No Compromise and Human Conditions DLC uninstalled for the percentages to match up with the autosplitter script. Must also follow the speedrun route in the WR.
+  
 - Starting split (once you gain control of Marcus).
-- Splits for all main missions, including "Walk in the Park".
-- Split for buying pants at the start of the game, if enabled in settings (default is disabled).
+- Splits for most individual main missions, and has options to enable/disable them.
+- Splits for "Walk in the Park", "Sunday Schooled" and "Mark Up" if enabled in settings (default is disabled).
+  - **"Walk in the Park" and "Sunday Schooled 1" do not always split properly due to subtitles being skipped.**
+- Still have to manual split for the last split when completing Motherload (last mission).
+  
+Does not support splitting for these individual missions/cutscenes & calls:
+- Intro mission/stuff before "Walk in the Park"
+- Newly Dawned ("False Profits")
+- ICU (Wrench cutscene at start of "Heist Sweet Heist")
+- Zero Days ("Heist Sweet Heist")
+- Trouble at Home ("Looking Glass")
+- Second Wind ("Alphabet Soup")
+- Nine Lives ("Hacker War")
+- Café Culture ("W4tched")
+- The Waiting Game ("Hack teh World")
+- Spinal Tap ("Shanghaied")
+- Social Media and the Congressman ("Power to the Sheeple")
+- Like Minds ("Robot Wars")
+- Motherload call (for mission to show up)
 
 ## Versions supported
 
@@ -24,9 +43,10 @@ This load remover *should* work for copies bought from any storefront. Your curr
 - v1.09.152.2.996015
 - v1.09.154.1001103
 - v1.011.174.3.1009368
-- v1.011.174.6.1009368 (**supports autosplitting**)
+- v1.011.174.6.1009368 
 - v1.017.189.2.1088394 (**supports autosplitting**, [final patch?](https://www.reddit.com/r/watch_dogs/comments/6r7vbr/title_update_117_bug_fix_patch_notes/))
 
 ## Contributors
 
 - Random_Machine *(autosplitting)*
+- Andreii *(percentage autosplitting)*
