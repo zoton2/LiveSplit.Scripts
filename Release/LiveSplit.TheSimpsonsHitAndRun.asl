@@ -9,7 +9,7 @@
 state("Simpsons")
 {
 	// Credits Lucas Cardellini
-	uint verCheck : 0x193FFF;
+	uint verCheck : 0x593FFF;
 }
 
 state("Simpsons", "ReleaseEnglish")
@@ -31,6 +31,7 @@ state("Simpsons", "ReleaseEnglish")
 	int loadingRequestHead : 0x2C8FF4, 0x73A4; // Loading Manager -> mRequestHead. Credit EnAppelsin#6509.
 	int loadingRequestTail : 0x2C8FF4, 0x73A8; // Loading Manager -> mRequestTail. Credit EnAppelsin#6509.
 	int isLoading : 0x2C8FF4, 0x73AC; // Loading Manager -> mLoading. Credit EnAppelsin#6509.
+	int waitingOnFade : 0x2C8980, 0x84; // Presentation Manager -> mWaitingOnFade. Credit Proddy.
 }
 
 state("Simpsons", "ReleaseInternational")
@@ -52,6 +53,7 @@ state("Simpsons", "ReleaseInternational")
 	int loadingRequestHead : 0x2C8FB4, 0x73A4; // Loading Manager -> mRequestHead. Credit EnAppelsin#6509.
 	int loadingRequestTail : 0x2C8FB4, 0x73A8; // Loading Manager -> mRequestTail. Credit EnAppelsin#6509.
 	int isLoading : 0x2C8FB4, 0x73AC; // Loading Manager -> mLoading. Credit EnAppelsin#6509.
+	int waitingOnFade : 0x2C8940, 0x84; // Presentation Manager -> mWaitingOnFade. Credit Proddy.
 }
 
 state("Simpsons", "BestSellersSeries")
@@ -73,6 +75,7 @@ state("Simpsons", "BestSellersSeries")
 	int loadingRequestHead : 0x2C8FEC, 0x73A4; // Loading Manager -> mRequestHead. Credit EnAppelsin#6509.
 	int loadingRequestTail : 0x2C8FEC, 0x73A8; // Loading Manager -> mRequestTail. Credit EnAppelsin#6509.
 	int isLoading : 0x2C8FEC, 0x73AC; // Loading Manager -> mLoading. Credit EnAppelsin#6509.
+	int waitingOnFade : 0x2C8978, 0x84; // Presentation Manager -> mWaitingOnFade. Credit Proddy.
 }
 
 startup
@@ -387,13 +390,15 @@ init
 	
 	// Version checking. Credits Lucas Cardellini
 	uint ver = current.verCheck;
-	if (ver == 0xFAE804C5 || ver == 0xC985ED33)		// Demo or Release International
-		version = "ReleaseInternational";
-	else if (ver == 0x4B8B2274)						// Release English
+	if (ver == 0x4B8B2274)						// Release English
 		version = "ReleaseEnglish";
-	else if (ver == 0xFC468D05)						// Best Sellers Series
+	else if (ver == 0xC985ED33)					// Release International
+		version = "ReleaseInternational";
+	else if (ver == 0xFC468D05)					// Best Sellers Series
 		version = "BestSellersSeries";
-	else											// Unknown version
+	else if (ver == 0xFAE804C5)					// Demo
+		print("Unsupported version: Demo");
+	else										// Unknown version
 		print("Unknown version: " + ver);
 	
 	// If the 100% final split is enabled or we need to calculate percentage, all the pointers
@@ -666,5 +671,6 @@ isLoading
 	return current.gameState == 8
 	|| (current.gameState == 10 && current.notLoading == 0 && current.paused == 0 && current.boothScreens == 0)
 	|| (current.gameState == 2 && current.mainMenu == 0)
-	|| ((current.interiorState == 1 || current.interiorState == 2) && (current.isLoading == 1 || current.loadingRequestHead != current.loadingRequestTail));
+	|| ((current.interiorState == 1 || current.interiorState == 2) && (current.isLoading == 1 || current.loadingRequestHead != current.loadingRequestTail))
+	|| (current.waitingOnFade != 0);
 }
