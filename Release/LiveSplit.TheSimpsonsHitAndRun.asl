@@ -9,7 +9,7 @@
 state("Simpsons")
 {
 	// Credits Lucas Cardellini
-	uint verCheck : 0x593FFF;
+	uint verCheck : 0x193FFF;
 }
 
 state("Simpsons", "ReleaseEnglish")
