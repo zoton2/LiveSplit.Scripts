@@ -672,5 +672,5 @@ isLoading
 	|| (current.gameState == 10 && current.notLoading == 0 && current.paused == 0 && current.boothScreens == 0)
 	|| (current.gameState == 2 && current.mainMenu == 0)
 	|| ((current.interiorState == 1 || current.interiorState == 2) && (current.isLoading == 1 || current.loadingRequestHead != current.loadingRequestTail))
-	|| (current.waitingOnFade != 0);
+	|| ((current.waitingOnFade & 2) != 0);
 }
