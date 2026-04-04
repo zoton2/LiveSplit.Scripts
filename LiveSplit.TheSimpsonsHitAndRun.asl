@@ -32,6 +32,7 @@ state("Simpsons", "ReleaseEnglish")
 	int loadingRequestTail : 0x2C8FF4, 0x73A8; // Loading Manager -> mRequestTail. Credit EnAppelsin#6509.
 	int isLoading : 0x2C8FF4, 0x73AC; // Loading Manager -> mLoading. Credit EnAppelsin#6509.
 	int fmvPlayerState : 0x2C8980, 0x54, 0x4; // Presentation Manager -> mFMVPlayer -> mState. Credit Proddy.
+	int fmvPlayerDriveFinished : 0x2C8980, 0x54, 0x38; // Presentation Manager -> mFMVPlayer -> mDriveFinished. Credit Proddy.
 }
 
 state("Simpsons", "ReleaseInternational")
@@ -54,6 +55,7 @@ state("Simpsons", "ReleaseInternational")
 	int loadingRequestTail : 0x2C8FB4, 0x73A8; // Loading Manager -> mRequestTail. Credit EnAppelsin#6509.
 	int isLoading : 0x2C8FB4, 0x73AC; // Loading Manager -> mLoading. Credit EnAppelsin#6509.
 	int fmvPlayerState : 0x2C8940, 0x54, 0x4; // Presentation Manager -> mFMVPlayer -> mState. Credit Proddy.
+	int fmvPlayerDriveFinished : 0x2C8940, 0x54, 0x38; // Presentation Manager -> mFMVPlayer -> mDriveFinished. Credit Proddy.
 }
 
 state("Simpsons", "BestSellersSeries")
@@ -76,6 +78,7 @@ state("Simpsons", "BestSellersSeries")
 	int loadingRequestTail : 0x2C8FEC, 0x73A8; // Loading Manager -> mRequestTail. Credit EnAppelsin#6509.
 	int isLoading : 0x2C8FEC, 0x73AC; // Loading Manager -> mLoading. Credit EnAppelsin#6509.
 	int fmvPlayerState : 0x2C8978, 0x54, 0x4; // Presentation Manager -> mFMVPlayer -> mState. Credit Proddy.
+	int fmvPlayerDriveFinished : 0x2C8978, 0x54, 0x38; // Presentation Manager -> mFMVPlayer -> mDriveFinished. Credit Proddy.
 }
 
 startup
@@ -672,5 +675,5 @@ isLoading
 	|| (current.gameState == 10 && current.notLoading == 0 && current.paused == 0 && current.boothScreens == 0)
 	|| (current.gameState == 2 && current.mainMenu == 0)
 	|| ((current.interiorState == 1 || current.interiorState == 2) && (current.isLoading == 1 || current.loadingRequestHead != current.loadingRequestTail))
-	|| (current.fmvPlayerState == 1);
+	|| (current.fmvPlayerState == 1 && current.fmvPlayerDriveFinished == 0);
 }
