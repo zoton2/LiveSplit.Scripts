@@ -33,6 +33,7 @@ state("Simpsons", "ReleaseEnglish")
 	int isLoading : 0x2C8FF4, 0x73AC; // Loading Manager -> mLoading. Credit EnAppelsin#6509.
 	int presentationManagerCurrent : 0x2C8980, 0x50; // Presentation Manager -> mCurrent. Credit Proddy.
 	int presentationManagerFMVPlayer : 0x2C8980, 0x54; // Presentation Manager -> mFMVPlayer. Credit Proddy.
+	int playerDrawablePlayer : 0x2C8980, 0x64, 0x10; // Presentation Manager -> mpPlayerDrawable -> mpPlayer. Credit Proddy.
 	int fmvPlayerIRadMoviePlayerIRadMovieRenderLoop : 0x2C8980, 0x54, 0x30, 0x18; // Presentation Manager -> mFMVPlayer -> m_refIRadMoviePlayer -> m_refIRadMovieRenderLoop. Credit Proddy.
 }
 
@@ -57,6 +58,7 @@ state("Simpsons", "ReleaseInternational")
 	int isLoading : 0x2C8FB4, 0x73AC; // Loading Manager -> mLoading. Credit EnAppelsin#6509.
 	int presentationManagerCurrent : 0x2C8940, 0x50; // Presentation Manager -> mCurrent. Credit Proddy.
 	int presentationManagerFMVPlayer : 0x2C8940, 0x54; // Presentation Manager -> mFMVPlayer. Credit Proddy.
+	int playerDrawablePlayer : 0x2C8940, 0x64, 0x10; // Presentation Manager -> mpPlayerDrawable -> mpPlayer. Credit Proddy.
 	int fmvPlayerIRadMoviePlayerIRadMovieRenderLoop : 0x2C8940, 0x54, 0x30, 0x18; // Presentation Manager -> mFMVPlayer -> m_refIRadMoviePlayer -> m_refIRadMovieRenderLoop. Credit Proddy.
 }
 
@@ -81,6 +83,7 @@ state("Simpsons", "BestSellersSeries")
 	int isLoading : 0x2C8FEC, 0x73AC; // Loading Manager -> mLoading. Credit EnAppelsin#6509.
 	int presentationManagerCurrent : 0x2C8978, 0x50; // Presentation Manager -> mCurrent. Credit Proddy.
 	int presentationManagerFMVPlayer : 0x2C8978, 0x54; // Presentation Manager -> mFMVPlayer. Credit Proddy.
+	int playerDrawablePlayer : 0x2C8978, 0x64, 0x10; // Presentation Manager -> mpPlayerDrawable -> mpPlayer. Credit Proddy.
 	int fmvPlayerIRadMoviePlayerIRadMovieRenderLoop : 0x2C8978, 0x54, 0x30, 0x18; // Presentation Manager -> mFMVPlayer -> m_refIRadMoviePlayer -> m_refIRadMovieRenderLoop. Credit Proddy.
 }
 
@@ -678,5 +681,5 @@ isLoading
 	|| (current.gameState == 10 && current.notLoading == 0 && current.paused == 0 && current.boothScreens == 0)
 	|| (current.gameState == 2 && current.mainMenu == 0)
 	|| ((current.interiorState == 1 || current.interiorState == 2) && (current.isLoading == 1 || current.loadingRequestHead != current.loadingRequestTail))
-	|| (current.presentationManagerCurrent != 0 && (presentationManagerFMVPlayer == 0 || fmvPlayerIRadMoviePlayer ));
+	|| (current.presentationManagerCurrent != 0 && (current.playerDrawablePlayer == current.presentationManagerFMVPlayer && current.fmvPlayerIRadMoviePlayerIRadMovieRenderLoop == 0));
 }
